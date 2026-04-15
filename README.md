@@ -98,7 +98,6 @@ Para acessar:
     R/              -> funções
     inst/extdata/   -> dados de exemplo
     inst/scripts/   -> scripts de aula
-    sandbox/        -> testes e experimentos
 
 ------------------------------------------------------------------------
 
