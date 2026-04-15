@@ -16,3 +16,4 @@ base <- gm_join_data(setores, dados_rds)
 
 names(base)
 plot(sf::st_geometry(base))
+gm_plot_basic(base, pop_abs, "População por setor")

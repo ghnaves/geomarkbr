@@ -5,9 +5,6 @@ parameters:
   eval: FALSE
 ---
 
-
-# geomarkbr
-
 Pacote em desenvolvimento com funções básicas para análise espacial de dados do Censo brasileiro, com foco em ensino de geomarketing.
 
 ## O que o pacote faz
@@ -104,7 +101,6 @@ Para acessar:
     R/              -> funções
     inst/extdata/   -> dados de exemplo
     inst/scripts/   -> scripts de aula
-    sandbox/        -> testes e experimentos
 
 ---
 
