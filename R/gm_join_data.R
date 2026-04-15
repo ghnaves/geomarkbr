@@ -7,8 +7,8 @@
 #' @return objeto sf
 #' @export
 gm_join_data <- function(setores, dados,
-                         id_setor_geom = "CD_SETOR",
-                         id_setor_tab  = "CD_SETOR") {
+                         id_setor_geom = "code_tract",
+                         id_setor_tab  = "code_tract") {
 
   dplyr::left_join(
     setores,

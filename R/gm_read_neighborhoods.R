@@ -4,7 +4,7 @@
 #' @return objeto sf
 #' @export
 gm_read_neighborhoods <- function(code_muni) {
-  bairros <- geobr::read_neighborhood(year = 2010, simplified = FALSE)
+  bairros <- geobr::read_neighborhood(year = 2022, simplified = FALSE)
   bairros |>
     dplyr::filter(code_muni == !!code_muni)
 }

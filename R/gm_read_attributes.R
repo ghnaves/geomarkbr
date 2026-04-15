@@ -4,7 +4,21 @@
 #' @return data.frame
 #' @export
 gm_read_attributes <- function(path) {
-  dados <- readr::read_csv(path, show_col_types = FALSE)
+
+  if (!file.exists(path)) {
+    stop("Arquivo não encontrado: ", path)
+  }
+
+  ext <- tools::file_ext(path)
+
+  if (ext == "csv") {
+    dados <- readr::read_csv(path, show_col_types = FALSE)
+  } else if (ext == "rds") {
+    dados <- readRDS(path)
+  } else {
+    stop("Formato não suportado. Use .csv ou .rds")
+  }
+
   dados
 }
 
