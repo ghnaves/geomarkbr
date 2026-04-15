@@ -1,14 +1,10 @@
----
-title: "geomarkbr"
-output: github_document
-parameters:
-  eval: FALSE
----
-
+geomarkbr
+================
 
 # geomarkbr
 
-Pacote em desenvolvimento com funções básicas para análise espacial de dados do Censo brasileiro, com foco em ensino de geomarketing.
+Pacote em desenvolvimento com funções básicas para análise espacial de
+dados do Censo brasileiro, com foco em ensino de geomarketing.
 
 ## O que o pacote faz
 
@@ -18,7 +14,7 @@ Pacote em desenvolvimento com funções básicas para análise espacial de dados
 - Calcular indicadores demográficos
 - Gerar grades regulares para análise espacial
 
----
+------------------------------------------------------------------------
 
 ## Instalação
 
@@ -30,7 +26,7 @@ Durante desenvolvimento:
 
     devtools::load_all()
 
----
+------------------------------------------------------------------------
 
 ## Dados de exemplo
 
@@ -45,7 +41,7 @@ Para acessar:
     library(geomarkbr)
     list.files(system.file("extdata", package = "geomarkbr"))
 
----
+------------------------------------------------------------------------
 
 ## Exemplo básico
 
@@ -62,7 +58,7 @@ Para acessar:
 
     gm_plot_basic(base, pop_abs, "População por setor")
 
----
+------------------------------------------------------------------------
 
 ## Indicadores demográficos
 
@@ -86,7 +82,7 @@ Para acessar:
         idade_mediana = gm_mediana_idade(base, colunas = cols_idade)
       )
 
----
+------------------------------------------------------------------------
 
 ## Criação de grade regular
 
@@ -97,7 +93,7 @@ Para acessar:
     plot(sf::st_geometry(grid), border = "grey50")
     plot(sf::st_geometry(base), add = TRUE)
 
----
+------------------------------------------------------------------------
 
 ## Estrutura do pacote
 
@@ -106,31 +102,32 @@ Para acessar:
     inst/scripts/   -> scripts de aula
     sandbox/        -> testes e experimentos
 
----
+------------------------------------------------------------------------
 
 ## Uso em aula
 
 O pacote foi estruturado para apoiar três etapas:
 
-1. leitura e integração de dados espaciais  
-2. construção de mapas temáticos  
-3. preparação para análise de localização (geomarketing)  
+1.  leitura e integração de dados espaciais\
+2.  construção de mapas temáticos\
+3.  preparação para análise de localização (geomarketing)
 
 Scripts disponíveis:
 
     system.file("scripts", package = "geomarkbr")
 
----
+------------------------------------------------------------------------
 
 ## Observações
 
-- Os dados de idade são agregados em faixas, portanto as medidas são aproximadas  
-- Estratégias de tratamento de NA podem ser controladas nas funções  
-- O pacote está em desenvolvimento  
+- Os dados de idade são agregados em faixas, portanto as medidas são
+  aproximadas\
+- Estratégias de tratamento de NA podem ser controladas nas funções\
+- O pacote está em desenvolvimento
 
----
+------------------------------------------------------------------------
 
 ## Autor
 
-Gustavo Givisiez  
+Gustavo Givisiez\
 Universidade Federal Fluminense

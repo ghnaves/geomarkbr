@@ -1,10 +1,7 @@
 ---
 title: "geomarkbr"
 output: github_document
-parameters:
-  eval: FALSE
 ---
-
 
 # geomarkbr
 
@@ -23,12 +20,14 @@ Pacote em desenvolvimento com funções básicas para análise espacial de dados
 ## Instalação
 
 Instalação local a partir do arquivo .tar.gz:
-
+```
     install.packages("geomarkbr_0.0.0.9000.tar.gz", repos = NULL, type = "source")
+```
 
 Durante desenvolvimento:
-
+```
     devtools::load_all()
+```
 
 ---
 
@@ -41,10 +40,10 @@ O pacote inclui dados para uso em aula:
 - variaveis.rds
 
 Para acessar:
-
+```
     library(geomarkbr)
     list.files(system.file("extdata", package = "geomarkbr"))
-
+```
 ---
 
 ## Exemplo básico
