@@ -1,8 +1,6 @@
 geomarkbr
 ================
 
-# geomarkbr
-
 Pacote em desenvolvimento com funções básicas para análise espacial de
 dados do Censo brasileiro, com foco em ensino de geomarketing.
 
