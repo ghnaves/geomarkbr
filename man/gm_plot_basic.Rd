@@ -4,18 +4,20 @@
 \alias{gm_plot_basic}
 \title{Mapa básico de setores}
 \usage{
-gm_plot_basic(x, var, titulo = NULL)
+gm_plot_basic(x, var, titulo = NULL, legenda = NULL)
 }
 \arguments{
-\item{x}{objeto sf}
+\item{x}{objeto sf.}
 
-\item{var}{nome da variável}
+\item{var}{nome da variável a ser mapeada.}
 
-\item{titulo}{título do mapa}
+\item{titulo}{título do mapa. Se NULL, usa o nome da variável.}
+
+\item{legenda}{título da legenda. Se NULL, usa o nome da variável.}
 }
 \value{
-ggplot
+objeto tmap.
 }
 \description{
-Mapa básico de setores
+Cria um mapa temático simples a partir de um objeto sf.
 }

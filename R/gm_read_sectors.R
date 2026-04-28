@@ -11,14 +11,13 @@ gm_read_sectors <- function(path = NULL, code_muni = NULL, year = 2022) {
     return(setores)
   }
 
-  if (!is.null(code_muni) && year == 2010) {
+  if (!is.null(code_muni)) {
     setores <- geobr::read_census_tract(
       code_tract = code_muni,
-      year = 2010,
+      year = year,
       simplified = FALSE
     )
     return(setores)
   }
 
-  stop("Para 2022, informe 'path' com a malha local dos setores.")
 }

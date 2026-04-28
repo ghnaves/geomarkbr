@@ -39,9 +39,6 @@ cols_idade <- c(
   "pop_abs_70_mais"
 )
 
-mediana <- gm_mediana_idade(variaveis_raw, colunas = cols_idade, na_strategy = "zero")
-media = gm_media_idade(variaveis_raw, colunas = cols_idade, na_strategy = "ignore")
-
 variaveis_raw = pessoas |>
   dplyr::select(code_tract,
                 pop_abs = demografia_V01006,
@@ -70,6 +67,9 @@ variaveis_raw = pessoas |>
                 pop_abs_60_69 = demografia_V01040,
                 pop_abs_70_mais = demografia_V01041)
 
+mediana <- gm_mediana_idade(variaveis_raw, colunas = cols_idade, na_strategy = "zero")
+media = gm_media_idade(variaveis_raw, colunas = cols_idade, na_strategy = "ignore")
+
 variaveis = variaveis_raw %>%
   dplyr::mutate(perc_mulheres = pop_mulheres/pop_abs,
          perc_homens = pop_homens/pop_abs,
@@ -79,6 +79,7 @@ variaveis = variaveis_raw %>%
                 pop_mulheres, perc_mulheres,
                 pop_homens, perc_homens,
                 idade_mediana, idade_media)
+
 
 readr::write_csv(variaveis, 'inst/extdata/variaveis.csv')
 readr::write_rds(variaveis, "inst/extdata/variaveis.rds")

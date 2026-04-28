@@ -1,6 +1,6 @@
 Package: geomarkbr
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Geomarketing aplicado ao contexto brasileiro
+Version: 0.0.0.9001
 Authors@R: 
     person(
       given = "Gustavo",
@@ -20,9 +20,10 @@ LazyData: true
 Depends: 
     R (>= 4.1.0)
 Imports:
+    tmap,
+    osmdata,
     sf,
     dplyr,
-    ggplot2,
     terra,
     geobr,
     censobr,

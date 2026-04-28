@@ -1,21 +1,39 @@
 #' Mapa básico de setores
 #'
-#' @param x objeto sf
-#' @param var nome da variável
-#' @param titulo título do mapa
-#' @return ggplot
+#' Cria um mapa temático simples a partir de um objeto sf.
+#'
+#' @param x objeto sf.
+#' @param var nome da variável a ser mapeada.
+#' @param titulo título do mapa. Se NULL, usa o nome da variável.
+#' @param legenda título da legenda. Se NULL, usa o nome da variável.
+#'
+#' @return objeto tmap.
 #' @export
-gm_plot_basic <- function(x, var, titulo = NULL) {
-  var <- rlang::ensym(var)
+gm_plot_basic <- function(x, var, titulo = NULL, legenda = NULL) {
 
-  ggplot2::ggplot(x) +
-    ggplot2::geom_sf(ggplot2::aes(fill = !!var), color = NA) +
-    ggplot2::scale_fill_viridis_c(na.value = "grey90") +
-    ggplot2::labs(
-      title = titulo %||% rlang::as_string(var),
-      fill = rlang::as_string(var)
+  var <- rlang::ensym(var)
+  var_name <- rlang::as_string(var)
+
+  if (is.null(titulo)) {
+    titulo <- var_name
+  }
+
+  if (is.null(legenda)) {
+    legenda <- var_name
+  }
+
+  tmap::tm_shape(x) +
+    tmap::tm_polygons(
+      fill = var_name,
+      fill.scale = tmap::tm_scale(values = "viridis"),
+      fill.legend = tmap::tm_legend(title = legenda),
+      col = NA
     ) +
-    ggplot2::theme_minimal()
+    tmap::tm_title(titulo) +
+    tmap::tm_layout(
+      legend.outside = TRUE,
+      frame = FALSE
+    )
 }
 
 `%||%` <- function(a, b) if (!is.null(a)) a else b

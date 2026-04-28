@@ -2,7 +2,7 @@ geomarkbr
 ================
 
 Pacote em desenvolvimento com funções básicas para análise espacial de
-dados do Censo brasileiro, com foco em ensino de geomarketing.
+dados para o contexto brasileiro, com foco em ensino de geomarketing.
 
 ## O que o pacote faz
 
@@ -18,7 +18,7 @@ dados do Censo brasileiro, com foco em ensino de geomarketing.
 
 Instalação local a partir do arquivo .tar.gz:
 
-    install.packages("geomarkbr_0.0.0.9000.tar.gz", repos = NULL, type = "source")
+    install.packages("geomarkbr_0.0.0.9001.tar.gz", repos = NULL, type = "source")
 
 Durante desenvolvimento:
 
@@ -58,39 +58,86 @@ Para acessar:
 
 ------------------------------------------------------------------------
 
-## Indicadores demográficos
+## Criação de grade regular
 
-    cols_idade <- c(
-      "pop_abs_00_04",
-      "pop_abs_05_09",
-      "pop_abs_10_14",
-      "pop_abs_15_19",
-      "pop_abs_20_24",
-      "pop_abs_25_29",
-      "pop_abs_30_39",
-      "pop_abs_40_49",
-      "pop_abs_50_59",
-      "pop_abs_60_69",
-      "pop_abs_70_mais"
+    base_utm <- sf::st_transform(base, 31984)
+    
+    gm_plot_basic(base_utm, pop_abs, "População por setor")
+    
+    gm_plot_overlay(
+      base = base_utm,
+      overlay = grid_utm,
+      titulo = "Grade regular sobre setores censitários"
     )
-
-    base <- base |>
-      dplyr::mutate(
-        idade_media   = gm_media_idade(base, colunas = cols_idade),
-        idade_mediana = gm_mediana_idade(base, colunas = cols_idade)
-      )
+    
+    gm_plot_overlay(
+      base = base,
+      overlay = grid_utm,
+      base_fill = "lightblue",
+      base_col = 'blue',
+      overlay_col = "green",
+      overlay_fill = 'lightgreen',
+      overlay_alpha = 0.3
+    )
 
 ------------------------------------------------------------------------
 
-## Criação de grade regular
+## Baixar vias e ciclovias pelo osmdata
 
-    library(sf)
+    vias <- sf::st_read(gm_example_data("vias_principais.gpkg"), quiet = TRUE)
+    ciclovias <- gm_read_example_cycleways("cycleway")
+    ciclofaixas <- gm_read_example_cycleways("cycleway_tag")
 
-    grid <- gm_make_grid(base, cellsize = 1000)
+    gm_plot_overlay(base, vias, titulo = "Vias principais") +
+      tmap::tm_shape(ciclovias) +
+      tmap::tm_lines(col = "blue", lwd = 2) +
+      tmap::tm_shape(ciclofaixas) +
+      tmap::tm_lines(col = "green", lwd = 2)
+      
+    gm_plot_overlay(base, vias, titulo = "Vias principais")
+    
+    gm_plot_overlay(
+      base = base,
+      overlay = grid_utm,
+      titulo = "Grade sobre setores",
+      overlay_col = "black",
+      overlay_alpha = 0.4
+    )
+    
+    gm_plot_overlay(
+      base = base,
+      overlay = ciclovias,
+      titulo = "Ciclovias",
+      overlay_col = "blue",
+      overlay_lwd = 2
+    )
+    
+------------------------------------------------------------------------
 
-    plot(sf::st_geometry(grid), border = "grey50")
-    plot(sf::st_geometry(base), add = TRUE)
+## Mapas interativos
 
+
+    tmap::tmap_mode("view")
+    
+    gm_plot_overlay(base, vias, titulo = "Vias principais", overlay_lwd = 1) +
+      tmap::tm_shape(ciclovias) +
+      tmap::tm_lines(col = "blue", lwd = 2) +
+      tmap::tm_shape(ciclofaixas) +
+      tmap::tm_lines(col = "green", lwd = 2)
+      
+    
+    # Para salvar html (ótimo para mostrar para clientes)
+    mapa_interativo = gm_plot_overlay(base, vias, titulo = "Vias principais", overlay_lwd = 1) +
+      tmap::tm_shape(ciclovias) +
+      tmap::tm_lines(col = "blue", lwd = 2) +
+      tmap::tm_shape(ciclofaixas) +
+      tmap::tm_lines(col = "green", lwd = 2)
+      
+    tmap::tmap_save(mapa_interativo, "mapa_interativo.html")
+    
+    # para voltar para o mapa estático
+    tmap::tmap_mode("plot") 
+    
 ------------------------------------------------------------------------
 
 ## Estrutura do pacote

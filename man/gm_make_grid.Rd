@@ -4,16 +4,38 @@
 \alias{gm_make_grid}
 \title{Criar grade regular}
 \usage{
-gm_make_grid(x, cellsize = 500)
+gm_make_grid(
+  shape,
+  type = c("metric", "latlon"),
+  cellsize = 100,
+  crs_out = 31984,
+  clip = TRUE
+)
 }
 \arguments{
-\item{x}{objeto sf}
+\item{shape}{Objeto \code{sf}, como, p. ex. a malha de setores censitários.}
 
-\item{cellsize}{tamanho da célula em metros}
+\item{type}{Tipo de grade. Use \code{"metric"} para grade em metros ou \code{"latlon"}
+para grade em graus.}
+
+\item{cellsize}{Tamanho da célula. Quando \code{type = "metric"}, deve ser um
+valor numérico em metros. Quando \code{type = "latlon"}, pode ser um valor
+numérico em graus ou um dos valores: \code{"1d"}, \code{"30m"}, \code{"15m"}, \code{"1m"},
+\code{"30s"} ou \code{"15s"}.}
+
+\item{crs_out}{Sistema de coordenadas usado para criar a grade métrica.
+O padrão é \code{31984}, correspondente a SIRGAS 2000 / UTM zone 24S.
+Para SIRGAS2000 latlong use \code{4674}}
+
+\item{clip}{Recortar a grid no formato da shape}
 }
 \value{
-objeto sf com grid
+Objeto \code{sf} com a grade regular.
 }
 \description{
-Criar grade regular
+Cria uma grade regular a partir da extensão espacial de um objeto \code{sf}.
+}
+\details{
+A grade pode ser criada em coordenadas métricas, como UTM, ou em coordenadas
+geográficas, alinhada a latitude e longitude.
 }
