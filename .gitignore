@@ -6,3 +6,4 @@
 *.tar.gz
 sandbox/
 .positai
+inst/extdata/*.html
