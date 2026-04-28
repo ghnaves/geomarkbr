@@ -2,22 +2,34 @@
 % Please edit documentation in R/gm_plot_basic.R
 \name{gm_plot_basic}
 \alias{gm_plot_basic}
-\title{Mapa básico de setores}
+\title{Criar mapa temático simples}
 \usage{
 gm_plot_basic(x, var, titulo = NULL, legenda = NULL)
 }
 \arguments{
-\item{x}{objeto sf.}
+\item{x}{Objeto \code{sf}.}
 
-\item{var}{nome da variável a ser mapeada.}
+\item{var}{Nome da variável a ser mapeada (sem aspas).}
 
-\item{titulo}{título do mapa. Se NULL, usa o nome da variável.}
+\item{titulo}{Título do mapa. Se \code{NULL}, usa o nome da variável.}
 
-\item{legenda}{título da legenda. Se NULL, usa o nome da variável.}
+\item{legenda}{Título da legenda. Se \code{NULL}, usa o nome da variável.}
 }
 \value{
-objeto tmap.
+Objeto \code{tmap}.
 }
 \description{
-Cria um mapa temático simples a partir de um objeto sf.
+Cria um mapa temático a partir de um objeto \code{sf}, utilizando uma variável
+numérica para o preenchimento dos polígonos.
+}
+\examples{
+\dontrun{
+base <- gm_join_data(
+  gm_read_sectors(gm_example_data("setores.gpkg")),
+  gm_read_attributes(gm_example_data("variaveis.rds"))
+)
+
+gm_plot_basic(base, pop_abs)
+}
+
 }

@@ -2,13 +2,30 @@
 % Please edit documentation in R/gm_example_data.R
 \name{gm_example_data}
 \alias{gm_example_data}
-\title{Retorna o caminho de arquivos de exemplo do pacote}
+\title{Obter caminho de arquivos de exemplo do pacote}
 \usage{
 gm_example_data(file = NULL)
 }
 \arguments{
-\item{file}{nome do arquivo em extdata}
+\item{file}{Nome do arquivo dentro de \code{extdata}. Se \code{NULL}, retorna
+o caminho da pasta \code{extdata}.}
+}
+\value{
+Um vetor de caracteres com o caminho completo para o arquivo ou
+diretório solicitado.
 }
 \description{
-Retorna o caminho de arquivos de exemplo do pacote
+Retorna o caminho para os dados de exemplo incluídos no pacote, localizados
+na pasta \code{inst/extdata}. Esses dados são utilizados nas aulas e exemplos
+do pacote.
+}
+\examples{
+\dontrun{
+# Listar arquivos disponíveis
+list.files(gm_example_data())
+
+# Obter caminho de um arquivo específico
+setores_path <- gm_example_data("setores.gpkg")
+}
+
 }

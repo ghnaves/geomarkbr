@@ -1,14 +1,46 @@
-#' Calcula a idade mediana aproximada por linha a partir de faixas etárias
+#' Calcular idade mediana aproximada a partir de faixas etárias
 #'
-#' @param df data frame com as colunas das faixas etárias.
-#' @param colunas vetor com os nomes das colunas de faixas etárias.
-#' @param breaks_inf vetor com os limites inferiores das faixas.
-#' @param breaks_sup vetor com os limites superiores das faixas.
-#' @param na_strategy estratégia para tratamento de NA:
-#'   "zero" substitui NA por 0;
-#'   "ignore" retorna NA para a linha se houver qualquer NA.
+#' Calcula a idade mediana aproximada por linha de um conjunto de dados,
+#' utilizando a distribuição da população em faixas etárias e os limites
+#' inferior e superior de cada faixa.
 #'
-#' @return vetor numérico com a idade mediana aproximada por linha.
+#' Essa abordagem é necessária porque os dados do Censo são disponibilizados
+#' em grupos de idade, e não como idade individual.
+#'
+#' @param df Data frame contendo as colunas com as contagens populacionais
+#'   por faixa etária.
+#' @param colunas Vetor de caracteres com os nomes das colunas que representam
+#'   as faixas etárias.
+#' @param breaks_inf Vetor numérico com os limites inferiores das faixas etárias.
+#' @param breaks_sup Vetor numérico com os limites superiores das faixas etárias.
+#'   Deve ter o mesmo comprimento que \code{colunas}.
+#' @param na_strategy Estratégia para tratamento de valores ausentes:
+#'   \itemize{
+#'     \item \code{"zero"}: substitui \code{NA} por 0 antes do cálculo
+#'     \item \code{"ignore"}: retorna \code{NA} para a linha se houver qualquer \code{NA}
+#'   }
+#'
+#' @return Vetor numérico com a idade mediana aproximada para cada linha.
+#'
+#' @details
+#' A idade mediana é estimada a partir da distribuição acumulada das
+#' frequências nas faixas etárias, identificando a classe em que se encontra
+#' o percentil de 50\% da população. Dentro dessa classe, é realizada uma
+#' interpolação linear para obter o valor aproximado da mediana.
+#'
+#' Como os dados são agregados em intervalos, o resultado é uma aproximação
+#' e depende da definição das faixas etárias.
+#'
+#' @examples
+#' \dontrun{
+#' dados <- gm_read_attributes(gm_example_data("variaveis.rds"))
+#'
+#' dados <- dados |>
+#'   dplyr::mutate(
+#'     idade_mediana = gm_mediana_idade(.)
+#'   )
+#' }
+#'
 #' @export
 gm_mediana_idade <- function(df,
                              colunas = c(

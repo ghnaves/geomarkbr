@@ -7,11 +7,24 @@
 gm_read_attributes(path)
 }
 \arguments{
-\item{path}{caminho para csv local.}
+\item{path}{Caminho para o arquivo local contendo os dados.}
 }
 \value{
-data.frame
+Um objeto do tipo \code{data.frame} ou \code{tibble}.
 }
 \description{
-Ler atributos de setores censitários
+Lê uma tabela de atributos associada aos setores censitários a partir de um
+arquivo local. Suporta arquivos nos formatos \code{.csv} e \code{.rds}.
+}
+\details{
+Arquivos no formato \code{.csv} são lidos com \code{readr::read_csv}, enquanto
+arquivos \code{.rds} são lidos com \code{readRDS}. O uso de \code{.rds} é
+recomendado quando se deseja preservar os tipos originais das variáveis.
+}
+\examples{
+\dontrun{
+dados_csv <- gm_read_attributes("dados/variaveis.csv")
+dados_rds <- gm_read_attributes(gm_example_data("variaveis.rds"))
+}
+
 }

@@ -1,13 +1,44 @@
-#' Calcula a idade média aproximada por linha a partir de faixas etárias
+#' Calcular idade média aproximada a partir de faixas etárias
 #'
-#' @param df data frame com as colunas das faixas etárias.
-#' @param colunas vetor com os nomes das colunas de faixas etárias.
-#' @param mid vetor com os pontos médios de cada faixa.
-#' @param na_strategy estratégia para tratamento de NA:
-#'   "zero" substitui NA por 0;
-#'   "ignore" retorna NA para a linha se houver qualquer NA.
+#' Calcula a idade média aproximada por linha de um conjunto de dados,
+#' utilizando a distribuição da população em faixas etárias e os pontos
+#' médios de cada faixa.
 #'
-#' @return vetor numérico com a idade média aproximada por linha.
+#' Essa abordagem é necessária porque os dados do Censo são disponibilizados
+#' em grupos de idade, e não como idade individual.
+#'
+#' @param df Data frame contendo as colunas com as contagens populacionais
+#'   por faixa etária.
+#' @param colunas Vetor de caracteres com os nomes das colunas que representam
+#'   as faixas etárias.
+#' @param mid Vetor numérico com os pontos médios de cada faixa etária.
+#'   Deve ter o mesmo comprimento que \code{colunas}.
+#' @param na_strategy Estratégia para tratamento de valores ausentes:
+#'   \itemize{
+#'     \item \code{"zero"}: substitui \code{NA} por 0 antes do cálculo
+#'     \item \code{"ignore"}: retorna \code{NA} para a linha se houver qualquer \code{NA}
+#'   }
+#'
+#' @return Vetor numérico com a idade média aproximada para cada linha.
+#'
+#' @details
+#' A idade média é calculada como uma média ponderada, em que os pesos são
+#' as populações em cada faixa etária e os valores são os pontos médios das
+#' respectivas faixas.
+#'
+#' Como os dados são agregados, o resultado é uma aproximação e depende da
+#' escolha dos pontos médios.
+#'
+#' @examples
+#' \dontrun{
+#' dados <- gm_read_attributes(gm_example_data("variaveis.rds"))
+#'
+#' dados <- dados |>
+#'   dplyr::mutate(
+#'     idade_media = gm_media_idade(.)
+#'   )
+#' }
+#'
 #' @export
 gm_media_idade <- function(df,
                            colunas = c(

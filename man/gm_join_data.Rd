@@ -2,7 +2,7 @@
 % Please edit documentation in R/gm_join_data.R
 \name{gm_join_data}
 \alias{gm_join_data}
-\title{Juntar setores e atributos}
+\title{Integrar setores censitários e tabela de atributos}
 \usage{
 gm_join_data(
   setores,
@@ -12,17 +12,34 @@ gm_join_data(
 )
 }
 \arguments{
-\item{setores}{objeto sf com geometria}
+\item{setores}{Objeto \code{sf} com a geometria dos setores censitários.}
 
-\item{dados}{tabela de atributos}
+\item{dados}{Tabela (data.frame ou tibble) contendo atributos a serem
+associados aos setores.}
 
-\item{id_setor_geom}{nome da coluna ID no objeto espacial}
+\item{id_setor_geom}{Nome da coluna de identificação no objeto espacial.}
 
-\item{id_setor_tab}{nome da coluna ID na tabela}
+\item{id_setor_tab}{Nome da coluna de identificação na tabela de atributos.}
 }
 \value{
-objeto sf
+Objeto \code{sf} com os atributos integrados.
 }
 \description{
-Juntar setores e atributos
+Realiza a junção entre um objeto espacial (\code{sf}) contendo a geometria
+dos setores censitários e uma tabela de atributos (por exemplo, dados do
+Censo). A função utiliza \code{left_join}, preservando todas as geometrias.
+}
+\details{
+A função mantém todas as geometrias do objeto \code{setores}, mesmo que não
+haja correspondência na tabela de atributos. Valores ausentes são preenchidos
+com \code{NA}.
+}
+\examples{
+\dontrun{
+setores <- gm_read_sectors(gm_example_data("setores.gpkg"))
+dados   <- gm_read_attributes(gm_example_data("variaveis.rds"))
+
+base <- gm_join_data(setores, dados)
+}
+
 }

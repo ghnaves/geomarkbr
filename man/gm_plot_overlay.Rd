@@ -2,7 +2,7 @@
 % Please edit documentation in R/gm_plot_overlay.R
 \name{gm_plot_overlay}
 \alias{gm_plot_overlay}
-\title{Mapa com duas camadas espaciais}
+\title{Criar mapa com duas camadas espaciais}
 \usage{
 gm_plot_overlay(
   base,
@@ -18,27 +18,51 @@ gm_plot_overlay(
 )
 }
 \arguments{
-\item{base}{objeto sf da camada de base, por exemplo setores censitários.}
+\item{base}{Objeto \code{sf} da camada de base, por exemplo setores censitários.}
 
-\item{overlay}{objeto sf da camada sobreposta, por exemplo uma grade regular.}
+\item{overlay}{Objeto \code{sf} da camada sobreposta, por exemplo vias, ciclovias
+ou uma grade regular.}
 
-\item{titulo}{título do mapa.}
+\item{titulo}{Título do mapa. Se \code{NULL}, o mapa é criado sem título.}
 
-\item{base_fill}{cor de preenchimento da camada de base.}
+\item{base_fill}{Cor de preenchimento da camada de base.}
 
-\item{base_col}{cor da borda da camada de base.}
+\item{base_col}{Cor da borda da camada de base.}
 
-\item{overlay_fill}{cor de preenchimento da camada sobreposta.}
+\item{base_alpha}{Transparência do preenchimento da camada de base.}
 
-\item{overlay_col}{cor da borda da camada sobreposta.}
+\item{overlay_fill}{Cor de preenchimento da camada sobreposta, usada quando
+\code{overlay} é uma camada de polígonos.}
 
-\item{overlay_alpha}{transparência da camada sobreposta.}
+\item{overlay_col}{Cor da camada sobreposta.}
 
-\item{overlay_lwd}{espessura da camada sobreposta}
+\item{overlay_alpha}{Transparência da camada sobreposta.}
+
+\item{overlay_lwd}{Espessura da camada sobreposta, usada quando \code{overlay}
+é uma camada de linhas.}
 }
 \value{
-objeto tmap.
+Objeto \code{tmap}.
 }
 \description{
 Cria um mapa simples com uma camada de base e uma camada sobreposta.
+A função identifica automaticamente se a camada sobreposta é formada por
+pontos, linhas ou polígonos.
+}
+\examples{
+\dontrun{
+base <- gm_join_data(
+  gm_read_sectors(gm_example_data("setores.gpkg")),
+  gm_read_attributes(gm_example_data("variaveis.rds"))
+)
+
+grid <- gm_make_grid(base, type = "metric", cellsize = 1000)
+
+gm_plot_overlay(
+  base = base,
+  overlay = grid,
+  titulo = "Grade regular sobre setores"
+)
+}
+
 }

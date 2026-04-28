@@ -2,17 +2,35 @@
 % Please edit documentation in R/gm_read_attributes.R
 \name{gm_read_tracts_censo}
 \alias{gm_read_tracts_censo}
-\title{Ler dados de setores do Censo via censobr}
+\title{Ler setores censitários do Censo}
 \usage{
 gm_read_tracts_censo(dataset = "Basico", year = 2022, as_data_frame = TRUE)
 }
 \arguments{
-\item{dataset}{base do censo}
+\item{dataset}{Nome da base do Censo a ser utilizada (por exemplo,
+\code{"Basico"}).}
 
-\item{year}{ano do censo}
+\item{year}{Ano do Censo (por exemplo, \code{2022}).}
 
-\item{as_data_frame}{retornar data.frame}
+\item{as_data_frame}{Se \code{TRUE}, retorna um \code{data.frame}. Caso
+contrário, retorna um objeto \code{sf}.}
+}
+\value{
+Um objeto \code{data.frame} ou \code{sf}, dependendo do argumento
+\code{as_data_frame}.
 }
 \description{
-Ler dados de setores do Censo via censobr
+Realiza o download dos dados de setores censitários diretamente do IBGE
+utilizando o pacote \code{censobr}.
+}
+\details{
+A função utiliza \code{censobr::read_tracts}, que realiza o download dos dados
+diretamente dos servidores do IBGE. O tempo de execução pode variar conforme
+o tamanho da base e a conexão com a internet.
+}
+\examples{
+\dontrun{
+setores <- gm_read_tracts_censo(year = 2022, dataset = "Basico")
+}
+
 }

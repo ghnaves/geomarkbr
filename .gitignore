@@ -7,3 +7,4 @@
 sandbox/
 .positai
 inst/extdata/*.html
+inst/doc

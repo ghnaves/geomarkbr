@@ -8,12 +8,12 @@ gm_make_grid(
   shape,
   type = c("metric", "latlon"),
   cellsize = 100,
-  crs_out = 31984,
+  crs_out = NULL,
   clip = TRUE
 )
 }
 \arguments{
-\item{shape}{Objeto \code{sf}, como, p. ex. a malha de setores censitários.}
+\item{shape}{Objeto \code{sf}, como a malha de setores censitários.}
 
 \item{type}{Tipo de grade. Use \code{"metric"} para grade em metros ou \code{"latlon"}
 para grade em graus.}
@@ -23,11 +23,11 @@ valor numérico em metros. Quando \code{type = "latlon"}, pode ser um valor
 numérico em graus ou um dos valores: \code{"1d"}, \code{"30m"}, \code{"15m"}, \code{"1m"},
 \code{"30s"} ou \code{"15s"}.}
 
-\item{crs_out}{Sistema de coordenadas usado para criar a grade métrica.
-O padrão é \code{31984}, correspondente a SIRGAS 2000 / UTM zone 24S.
-Para SIRGAS2000 latlong use \code{4674}}
+\item{crs_out}{Sistema de coordenadas usado para criar a grade. Se \code{NULL},
+usa \code{31984} para \code{type = "metric"} e \code{4674} para \code{type = "latlon"}.}
 
-\item{clip}{Recortar a grid no formato da shape}
+\item{clip}{Se \code{TRUE}, mantém apenas as células que intersectam a geometria
+de \code{shape}.}
 }
 \value{
 Objeto \code{sf} com a grade regular.
@@ -37,5 +37,17 @@ Cria uma grade regular a partir da extensão espacial de um objeto \code{sf}.
 }
 \details{
 A grade pode ser criada em coordenadas métricas, como UTM, ou em coordenadas
-geográficas, alinhada a latitude e longitude.
+geográficas, alinhada à latitude e longitude.
+}
+\examples{
+\dontrun{
+base <- gm_join_data(
+  gm_read_sectors(gm_example_data("setores.gpkg")),
+  gm_read_attributes(gm_example_data("variaveis.rds"))
+)
+
+grid_utm <- gm_make_grid(base, type = "metric", cellsize = 1000)
+grid_latlon <- gm_make_grid(base, type = "latlon", cellsize = "15s")
+}
+
 }

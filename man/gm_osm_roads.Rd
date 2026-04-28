@@ -11,15 +11,43 @@ gm_osm_roads(
 )
 }
 \arguments{
-\item{shape}{objeto sf usado para definir a área de busca.}
+\item{shape}{Objeto \code{sf} usado para definir a área de busca.
+A extensão do objeto é convertida para coordenadas geográficas antes
+da consulta.}
 
-\item{highway}{tipos de vias do OSM.}
+\item{highway}{Vetor de caracteres com os tipos de vias a serem retornados,
+conforme a classificação do OSM (por exemplo: \code{"primary"},
+\code{"secondary"}, \code{"residential"}).}
 
-\item{timeout}{tempo máximo da consulta, em segundos.}
+\item{timeout}{Tempo máximo da consulta, em segundos. Consultas em áreas
+maiores podem exigir valores mais altos.}
 }
 \value{
-objeto sf com vias.
+Objeto \code{sf} contendo as vias retornadas pela consulta.
 }
 \description{
-Baixar vias do OpenStreetMap
+Realiza o download de dados de vias do OpenStreetMap (OSM) a partir da
+extensão espacial de um objeto \code{sf}. A consulta é feita via Overpass API,
+retornando geometrias do tipo linha (\code{LINESTRING}).
+}
+\details{
+Os dados são obtidos a partir da Overpass API, que pode apresentar limitações
+de desempenho ou indisponibilidade temporária. Em alguns casos, consultas
+extensas podem resultar em erros ou demoras significativas.
+
+Recomenda-se utilizar filtros mais restritivos em \code{highway} ou áreas
+menores para garantir melhor desempenho.
+}
+\examples{
+\dontrun{
+base <- gm_join_data(
+  gm_read_sectors(gm_example_data("setores.gpkg")),
+  gm_read_attributes(gm_example_data("variaveis.rds"))
+)
+
+vias <- gm_osm_roads(base)
+
+plot(sf::st_geometry(vias), col = "grey40")
+}
+
 }

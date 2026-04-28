@@ -2,13 +2,23 @@
 % Please edit documentation in R/gm_read_example_roads.R
 \name{gm_read_example_roads}
 \alias{gm_read_example_roads}
-\title{Ler vias de exemplo}
+\title{Ler vias de exemplo do OpenStreetMap}
 \usage{
 gm_read_example_roads()
 }
 \value{
-objeto sf com vias principais.
+Objeto \code{sf} contendo linhas representando vias.
 }
 \description{
-Ler vias de exemplo
+Carrega uma camada de vias principais previamente preparada e incluída no
+pacote para uso em aula. Os dados foram obtidos do OpenStreetMap e filtrados
+para representar vias de maior hierarquia (por exemplo, \code{primary},
+\code{secondary} e \code{tertiary}).
+}
+\examples{
+\dontrun{
+vias <- gm_read_example_roads()
+plot(sf::st_geometry(vias), col = "grey40")
+}
+
 }

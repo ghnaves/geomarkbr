@@ -2,16 +2,39 @@
 % Please edit documentation in R/gm_read_neighborhoods.R
 \name{gm_read_neighborhoods}
 \alias{gm_read_neighborhoods}
-\title{Ler bairros de um município}
+\title{Ler bairros ou vizinhanças}
 \usage{
-gm_read_neighborhoods(code_muni)
+gm_read_neighborhoods(path = NULL, code_muni = NULL, year = 2010)
 }
 \arguments{
-\item{code_muni}{código IBGE do município}
+\item{path}{Caminho para um arquivo local contendo bairros ou vizinhanças
+(por exemplo, \code{.gpkg} ou \code{.shp}). Se informado, tem prioridade
+sobre \code{code_muni}.}
+
+\item{code_muni}{Código IBGE do município. Se informado, a função tenta
+baixar os bairros via \code{geobr}.}
+
+\item{year}{Ano da base. Por padrão, \code{2010}.}
 }
 \value{
-objeto sf
+Objeto \code{sf} contendo a geometria dos bairros/vizinhanças.
 }
 \description{
-Ler bairros de um município
+Lê uma camada de bairros/vizinhanças a partir de um arquivo local ou realiza
+o download via pacote \code{geobr}, quando disponível.
+}
+\details{
+Nem todos os municípios possuem bairros disponíveis no \code{geobr}.
+Para uso em aula, recomenda-se utilizar um arquivo local previamente
+preparado quando a base de bairros não estiver disponível.
+}
+\examples{
+\dontrun{
+# Ler a partir de arquivo local
+bairros <- gm_read_neighborhoods("dados/bairros.gpkg")
+
+# Tentar baixar via geobr
+bairros <- gm_read_neighborhoods(code_muni = 3301009)
+}
+
 }

@@ -1,0 +1,104 @@
+---
+title: "introducao_geomarketing"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{introducao_geomarketing}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(geomarkbr)
+library(dplyr)
+library(sf)
+library(tmap)
+```
+
+# 1. Introdução
+
+O objetivo desta vignette é apresentar um fluxo básico de análise espacial
+aplicado ao geomarketing, utilizando dados censitários e dados do OpenStreetMap.
+
+# 2. Carregar dados
+
+```{r}
+library(geomarkbr)
+library(dplyr)
+
+setores_path <- gm_example_data("setores.gpkg")
+variaveis_path <- gm_example_data("variaveis.rds")
+
+setores <- gm_read_sectors(setores_path)
+dados   <- gm_read_attributes(variaveis_path)
+
+base <- gm_join_data(setores, dados)
+```
+
+Começar a ensinar fluxo.
+
+# 3. Primeiro Mapa
+
+```{r}
+gm_plot_basic(base, pop_abs, "População por setor")
+```
+
+Gancho visual
+
+# 4. Introduzir Projeção
+
+```{r}
+base_utm <- sf::st_transform(base, 31984)
+```
+
+Explicação didática (metros vs graus).
+
+# 5. Grade regular
+
+```{r}
+grid_utm <- gm_make_grid(base, type = "metric", cellsize = 1000)
+
+gm_plot_overlay(
+  base = base_utm,
+  overlay = grid_utm,
+  titulo = "Grade regular sobre setores"
+)
+```
+
+Início eomarketing de fato.
+
+# 6. Infraestrutura urbana (OSM)
+
+```{r}
+vias <- sf::st_read(gm_example_data("vias_principais.gpkg"), quiet = TRUE)
+ciclovias <- gm_read_example_cycleways("cycleway")
+ciclofaixas <- gm_read_example_cycleways("cycleway_tag")
+```
+
+Mapa:
+
+```{r}
+gm_plot_overlay(base, vias, titulo = "Vias principais") +
+  tmap::tm_shape(ciclovias) +
+  tmap::tm_lines(col = "blue", lwd = 2)
+```
+
+Conectar espaço + mobilidade.
+
+# 7. Versão interativa
+
+```{r}
+tmap::tmap_mode("view")
+```
+
+# Considerações Finais
+
+Essas etapas constituem a base para análises mais avançadas de localização,
+como delimitação de áreas de influência, análise de acessibilidade e
+estimação de demanda potencial.

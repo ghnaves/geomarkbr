@@ -2,7 +2,7 @@
 % Please edit documentation in R/gm_media_idade.R
 \name{gm_media_idade}
 \alias{gm_media_idade}
-\title{Calcula a idade média aproximada por linha a partir de faixas etárias}
+\title{Calcular idade média aproximada a partir de faixas etárias}
 \usage{
 gm_media_idade(
   df,
@@ -14,19 +14,48 @@ gm_media_idade(
 )
 }
 \arguments{
-\item{df}{data frame com as colunas das faixas etárias.}
+\item{df}{Data frame contendo as colunas com as contagens populacionais
+por faixa etária.}
 
-\item{colunas}{vetor com os nomes das colunas de faixas etárias.}
+\item{colunas}{Vetor de caracteres com os nomes das colunas que representam
+as faixas etárias.}
 
-\item{mid}{vetor com os pontos médios de cada faixa.}
+\item{mid}{Vetor numérico com os pontos médios de cada faixa etária.
+Deve ter o mesmo comprimento que \code{colunas}.}
 
-\item{na_strategy}{estratégia para tratamento de NA:
-"zero" substitui NA por 0;
-"ignore" retorna NA para a linha se houver qualquer NA.}
+\item{na_strategy}{Estratégia para tratamento de valores ausentes:
+\itemize{
+\item \code{"zero"}: substitui \code{NA} por 0 antes do cálculo
+\item \code{"ignore"}: retorna \code{NA} para a linha se houver qualquer \code{NA}
+}}
 }
 \value{
-vetor numérico com a idade média aproximada por linha.
+Vetor numérico com a idade média aproximada para cada linha.
 }
 \description{
-Calcula a idade média aproximada por linha a partir de faixas etárias
+Calcula a idade média aproximada por linha de um conjunto de dados,
+utilizando a distribuição da população em faixas etárias e os pontos
+médios de cada faixa.
+}
+\details{
+Essa abordagem é necessária porque os dados do Censo são disponibilizados
+em grupos de idade, e não como idade individual.
+
+A idade média é calculada como uma média ponderada, em que os pesos são
+as populações em cada faixa etária e os valores são os pontos médios das
+respectivas faixas.
+
+Como os dados são agregados, o resultado é uma aproximação e depende da
+escolha dos pontos médios.
+}
+\examples{
+\dontrun{
+dados <- gm_read_attributes(gm_example_data("variaveis.rds"))
+
+dados <- dados |>
+  dplyr::mutate(
+    idade_media = gm_media_idade(.)
+  )
+}
+
 }

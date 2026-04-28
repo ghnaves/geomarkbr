@@ -2,7 +2,7 @@
 % Please edit documentation in R/gm_mediana_idade.R
 \name{gm_mediana_idade}
 \alias{gm_mediana_idade}
-\title{Calcula a idade mediana aproximada por linha a partir de faixas etárias}
+\title{Calcular idade mediana aproximada a partir de faixas etárias}
 \usage{
 gm_mediana_idade(
   df,
@@ -15,21 +15,51 @@ gm_mediana_idade(
 )
 }
 \arguments{
-\item{df}{data frame com as colunas das faixas etárias.}
+\item{df}{Data frame contendo as colunas com as contagens populacionais
+por faixa etária.}
 
-\item{colunas}{vetor com os nomes das colunas de faixas etárias.}
+\item{colunas}{Vetor de caracteres com os nomes das colunas que representam
+as faixas etárias.}
 
-\item{breaks_inf}{vetor com os limites inferiores das faixas.}
+\item{breaks_inf}{Vetor numérico com os limites inferiores das faixas etárias.}
 
-\item{breaks_sup}{vetor com os limites superiores das faixas.}
+\item{breaks_sup}{Vetor numérico com os limites superiores das faixas etárias.
+Deve ter o mesmo comprimento que \code{colunas}.}
 
-\item{na_strategy}{estratégia para tratamento de NA:
-"zero" substitui NA por 0;
-"ignore" retorna NA para a linha se houver qualquer NA.}
+\item{na_strategy}{Estratégia para tratamento de valores ausentes:
+\itemize{
+\item \code{"zero"}: substitui \code{NA} por 0 antes do cálculo
+\item \code{"ignore"}: retorna \code{NA} para a linha se houver qualquer \code{NA}
+}}
 }
 \value{
-vetor numérico com a idade mediana aproximada por linha.
+Vetor numérico com a idade mediana aproximada para cada linha.
 }
 \description{
-Calcula a idade mediana aproximada por linha a partir de faixas etárias
+Calcula a idade mediana aproximada por linha de um conjunto de dados,
+utilizando a distribuição da população em faixas etárias e os limites
+inferior e superior de cada faixa.
+}
+\details{
+Essa abordagem é necessária porque os dados do Censo são disponibilizados
+em grupos de idade, e não como idade individual.
+
+A idade mediana é estimada a partir da distribuição acumulada das
+frequências nas faixas etárias, identificando a classe em que se encontra
+o percentil de 50\\% da população. Dentro dessa classe, é realizada uma
+interpolação linear para obter o valor aproximado da mediana.
+
+Como os dados são agregados em intervalos, o resultado é uma aproximação
+e depende da definição das faixas etárias.
+}
+\examples{
+\dontrun{
+dados <- gm_read_attributes(gm_example_data("variaveis.rds"))
+
+dados <- dados |>
+  dplyr::mutate(
+    idade_mediana = gm_mediana_idade(.)
+  )
+}
+
 }
