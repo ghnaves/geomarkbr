@@ -1,6 +1,9 @@
 ---
-title: "introducao_geomarketing"
+title: "Introdução Geomarketing"
+subtile: "Usando o pacote gemomarkbr"
 output: rmarkdown::html_vignette
+bibliography: references.bib
+csl: planeta-zotero-abnt.csl
 vignette: >
   %\VignetteIndexEntry{introducao_geomarketing}
   %\VignetteEngine{knitr::rmarkdown}
@@ -8,25 +11,56 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+knitr::opts_chunk$set(eval = FALSE)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
-```{r setup}
+```{r setup,warning=FALSE, message=FALSE}
 library(geomarkbr)
 library(dplyr)
 library(sf)
 library(tmap)
+tmap::tmap_mode("plot")
 ```
 
 # 1. Introdução
 
-O objetivo desta vignette é apresentar um fluxo básico de análise espacial
-aplicado ao geomarketing, utilizando dados censitários e dados do OpenStreetMap.
+O objetivo desta vignette é apresentar um fluxo básico de análise espacial aplicado ao geomarketing, utilizando dados censitários e dados do OpenStreetMap. Este documento foi elaborado inicialmente como material de apoio para uma disciplina de graduação e segue, em grande medida, o encadeamento das aulas.
+
+O geomarketing, também conhecido como análise de localização, envolve o uso de dados espaciais para apoiar decisões sobre onde localizar atividades econômicas ou serviços. Um exemplo clássico é a escolha do melhor local para a instalação de um estabelecimento comercial, de forma a maximizar o número de potenciais clientes e, consequentemente, o retorno econômico. No entanto, as mesmas técnicas podem ser aplicadas em contextos não comerciais, como a definição de locais para implantação de equipamentos públicos, incluindo unidades de saúde, escolas ou serviços de assistência social.
+
+No centro dessas análises estão as pessoas: onde vivem, como se deslocam e em quais áreas concentram suas atividades. A identificação de “localizações ótimas” depende da combinação entre a distribuição espacial da população e as características do território. Esse tipo de raciocínio aproxima a análise espacial de conceitos utilizados em outras áreas, como a ecologia, em que a distribuição de espécies também está associada a condições ambientais favoráveis. De forma análoga, determinadas áreas urbanas concentram maior potencial de demanda, configurando nichos espaciais relevantes para a oferta de bens e serviços [@lovelace2019].
+
+Ao longo desta vignette, apresentamos um conjunto de etapas típicas em estudos de localização, incluindo a organização de dados censitários brasileiros [@ibge2022b], sua integração com bases espaciais e a incorporação de informações provenientes do OpenStreetMap [@openstreetmapfoundation2023]. O objetivo não é esgotar o tema, mas oferecer uma introdução prática que permita compreender como diferentes fontes de dados e ferramentas podem ser combinadas para responder a questões relacionadas à distribuição espacial da população e à localização de atividades.
+
+## 1.1 O estudo de caso
+
+Basedo no exemplo apresentado por @lovelace2019 para a Alemanha, o estudo de caso desenvolvido ao longo deste documnento considera uma pequena rede de lojas de bicicletas em Campos dos Goytacazes. No primeiro momento, os recursos são limitados e permitem a abertura de apenas duas unidades. A escolha dos locais, portanto, é uma decisão estratégica: as lojas devem ser implantadas em áreas com maior potencial de demanda, de forma a maximizar o número de clientes e garantir a viabilidade do negócio.
+
+Suponha, adicionalmente, que uma pesquisa de mercado (hipotética) indique que indivíduos jovens, especialmente entre 20 e 40 anos, constituem o principal público consumidor. Ainda que simplificada, essa informação já permite direcionar a análise espacial, considerando não apenas o tamanho da população, mas também sua composição etária e distribuição no território.
+
+Diante desse cenário, surge a questão central: onde localizar essas duas lojas? Empresas de consultoria especializadas em geomarketing poderiam ser contratadas para responder a essa pergunta, utilizando bases de dados detalhadas e modelos sofisticados. No entanto, com o uso de dados abertos e ferramentas de código aberto, é possível desenvolver análises semelhantes de forma autônoma.
+
+Ao longo desta vignette, apresentamos um conjunto de etapas que permitem estruturar esse tipo de análise. Partindo de dados censitários e informações espaciais, buscamos identificar áreas com maior concentração de população potencialmente interessada, incorporar elementos da infraestrutura urbana — como a rede viária — e explorar diferentes formas de representar e interpretar essas informações no espaço.
+
+Embora o exemplo esteja centrado em duas lojas em Campos dos Goytacazes, os procedimentos apresentados podem ser facilmente generalizados para outras escalas. Caso a estratégia se mostre bem-sucedida, a análise poderia ser expandida para outros municípios, apoiando decisões de localização em contextos mais amplos.
 
 # 2. Carregar dados
+
+Nesta etapa, vamos carregar os dados que serão usados na análise. O pacote `geomarkbr` já vem com alguns arquivos de exemplo, preparados para as aulas. Isso evita que seja necessário baixar dados da internet durante a atividade.
+
+São dois arquivos principais
+
+- O primeiro contém a geometria dos setores censitários, ou seja, os polígonos que representam cada setor no mapa
+- O segundo contém uma tabela com informações associadas a esses setores, como população e outras variáveis demográficas.
+
+A lógica desta etapa é simples: primeiro lemos o mapa dos setores, depois lemos a tabela de atributos e, por fim, juntamos os dois usando o código do setor censitário.
+
+
 
 ```{r}
 library(geomarkbr)
@@ -41,15 +75,34 @@ dados   <- gm_read_attributes(variaveis_path)
 base <- gm_join_data(setores, dados)
 ```
 
-Começar a ensinar fluxo.
+Ao final desse bloco, o objeto `base` passa a reunir as duas partes da informação: a localização dos setores censitários e os dados associados a cada um deles. Esse será o objeto inicail a ser usado nas próximas etapas da análise.
 
 # 3. Primeiro Mapa
+
+O comando a seguir é simples. O único objetivo dele é exibir o objeto `base` que acabamos de gerar. O resultado é um mapa estático na janela de gráficos. A janela de gráficos é diferente a depender da interface que você estiver usando: *Viewer* do RStudio; *Quartz 2* no R do MacOS; *Plot* do Positron; ou a janela *R Graphics* no Windows. 
+
+Esse mapa pode ser copido para a área de tranferencia e colado em um arquivo de processadores de texto (MS Word ou Google Docs, por exemplo). Também pode ser salvo em formatos de imagem (PNG ou JPEG).
+
 
 ```{r}
 gm_plot_basic(base, pop_abs, "População por setor")
 ```
 
-Gancho visual
+Mas, esse mapa é estático, ou seja, você não consegue navegar nele (dar zoom e ocultar camadas). A sequencia abaixo "liga" o mapa "dinâmico". Isso pode ser ativado com `tmap::tmap_mode("view")`.
+
+
+```{r}
+tmap::tmap_mode("view")
+gm_plot_basic(base, pop_abs, "População por setor")
+```
+
+Finalmente, vale destacar que o mapa dinâmico tem alguns elementos de navegação como o botão para exibição layers e os botões de "+" e "-" do zoom. Esses elementos vão aparecer na figura que for exportada. Para desligar, rode `tmap::tmap_mode("plot")`.
+
+🔭 **Observação**: Esse tutorial usa a opção estática (`polt`) para agilizar o processamento.
+
+```{r}
+tmap::tmap_mode("plot")
+```
 
 # 4. Introduzir Projeção
 
@@ -97,8 +150,10 @@ Conectar espaço + mobilidade.
 tmap::tmap_mode("view")
 ```
 
-# Considerações Finais
+# 8. Considerações Finais
 
 Essas etapas constituem a base para análises mais avançadas de localização,
 como delimitação de áreas de influência, análise de acessibilidade e
 estimação de demanda potencial.
+
+# Referências

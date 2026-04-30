@@ -4,16 +4,16 @@
 \alias{gm_plot_basic}
 \title{Criar mapa temático simples}
 \usage{
-gm_plot_basic(x, var, titulo = NULL, legenda = NULL)
+gm_plot_basic(shape, var, titulo = NULL, legenda = NULL)
 }
 \arguments{
-\item{x}{Objeto \code{sf}.}
-
 \item{var}{Nome da variável a ser mapeada (sem aspas).}
 
 \item{titulo}{Título do mapa. Se \code{NULL}, usa o nome da variável.}
 
 \item{legenda}{Título da legenda. Se \code{NULL}, usa o nome da variável.}
+
+\item{x}{Objeto \code{sf}.}
 }
 \value{
 Objeto \code{tmap}.

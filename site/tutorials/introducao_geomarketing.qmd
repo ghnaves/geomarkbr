@@ -1,0 +1,285 @@
+---
+title: "Introdução ao Geomarketing"
+subtitle: "Aplicações com o pacote geomarkbr"
+author: "Gustavo Givisiez"
+date: today
+lang: pt-BR
+
+project:
+  type: website
+  output-dir: docs
+  
+format:
+  html:
+    embed-resources: true
+    self_contained: true
+    theme: journal
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    number-sections: true
+    code-fold: show
+    code-tools: true
+    highlight-style: tango
+
+execute:
+  eval: true
+  echo: true
+  warning: false
+  message: false
+
+bibliography: references.bib
+csl: planeta-zotero-abnt.csl
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, eval = TRUE}
+library(geomarkbr)
+library(dplyr)
+library(sf)
+library(tmap)
+tmap::tmap_mode("plot")
+```
+
+# Introdução
+
+O objetivo deste tutorial é apresentar um fluxo básico de análise espacial aplicado ao geomarketing, utilizando dados censitários e dados do OpenStreetMap. Este documento foi elaborado inicialmente como material de apoio para uma disciplina de graduação e segue, em grande medida, o encadeamento das aulas.
+
+O geomarketing, também conhecido como análise de localização, envolve o uso de dados espaciais para apoiar decisões sobre onde localizar atividades econômicas ou serviços. Um exemplo clássico é a escolha do melhor local para a instalação de um estabelecimento comercial, de forma a maximizar o número de potenciais clientes e, consequentemente, o retorno econômico. No entanto, as mesmas técnicas podem ser aplicadas em contextos não comerciais, como a definição de locais para implantação de equipamentos públicos, incluindo unidades de saúde, escolas ou serviços de assistência social.
+
+No centro dessas análises estão as pessoas: onde vivem, como se deslocam e em quais áreas concentram suas atividades. A identificação de “localizações ótimas” depende da combinação entre a distribuição espacial da população e as características do território. Esse tipo de raciocínio aproxima a análise espacial de conceitos utilizados em outras áreas, como a ecologia, em que a distribuição de espécies também está associada a condições ambientais favoráveis. De forma análoga, determinadas áreas urbanas concentram maior potencial de demanda, configurando nichos espaciais relevantes para a oferta de bens e serviços [@lovelace2019].
+
+Ao longo desta vignette, apresentamos um conjunto de etapas típicas em estudos de localização, incluindo a organização de dados censitários brasileiros [@ibge2022b], sua integração com bases espaciais e a incorporação de informações provenientes do OpenStreetMap [@openstreetmapfoundation2023]. O objetivo não é esgotar o tema, mas oferecer uma introdução prática que permita compreender como diferentes fontes de dados e ferramentas podem ser combinadas para responder a questões relacionadas à distribuição espacial da população e à localização de atividades.
+
+## O estudo de caso
+
+Basedo no exemplo apresentado por @lovelace2019 para a Alemanha, o estudo de caso desenvolvido ao longo deste documnento considera uma pequena rede de lojas de bicicletas em Campos dos Goytacazes. No primeiro momento, os recursos são limitados e permitem a abertura de apenas duas unidades. A escolha dos locais, portanto, é uma decisão estratégica: as lojas devem ser implantadas em áreas com maior potencial de demanda, de forma a maximizar o número de clientes e garantir a viabilidade do negócio.
+
+Suponha, adicionalmente, que uma pesquisa de mercado (hipotética) indique que indivíduos jovens, especialmente entre 20 e 40 anos, constituem o principal público consumidor. Ainda que simplificada, essa informação já permite direcionar a análise espacial, considerando não apenas o tamanho da população, mas também sua composição etária e distribuição no território.
+
+Diante desse cenário, surge a questão central: onde localizar essas duas lojas? Empresas de consultoria especializadas em geomarketing poderiam ser contratadas para responder a essa pergunta, utilizando bases de dados detalhadas e modelos sofisticados. No entanto, com o uso de dados abertos e ferramentas de código aberto, é possível desenvolver análises semelhantes de forma autônoma.
+
+Ao longo desta vignette, apresentamos um conjunto de etapas que permitem estruturar esse tipo de análise. Partindo de dados censitários e informações espaciais, buscamos identificar áreas com maior concentração de população potencialmente interessada, incorporar elementos da infraestrutura urbana — como a rede viária — e explorar diferentes formas de representar e interpretar essas informações no espaço.
+
+Embora o exemplo esteja centrado em duas lojas em Campos dos Goytacazes, os procedimentos apresentados podem ser facilmente generalizados para outras escalas. Caso a estratégia se mostre bem-sucedida, a análise poderia ser expandida para outros municípios, apoiando decisões de localização em contextos mais amplos.
+
+# Carregar dados
+
+O pacote utilizado nesta aula está disponível em [@givisiez2026]. Nesta etapa, vamos carregar os dados que serão usados na análise. O pacote `geomarkbr` já vem com alguns arquivos de exemplo, preparados para as aulas. Isso evita que seja necessário baixar dados da internet durante a atividade.
+
+São dois arquivos principais
+
+- O primeiro contém a geometria dos setores censitários, ou seja, os polígonos que representam cada setor no mapa
+- O segundo contém uma tabela com informações associadas a esses setores, como população e outras variáveis demográficas.
+
+A lógica desta etapa é simples: primeiro lemos o mapa dos setores, depois lemos a tabela de atributos e, por fim, juntamos os dois usando o código do setor censitário.
+
+
+
+```{r}
+library(geomarkbr)
+library(dplyr)
+
+setores_path <- gm_example_data_path("setores.gpkg")
+variaveis_path <- gm_example_data_path("variaveis.rds")
+
+setores <- gm_read_sectors(setores_path)
+dados   <- gm_read_attributes(variaveis_path)
+
+base <- gm_join_data(setores, dados)
+```
+
+Ao final desse bloco, o objeto `base` passa a reunir as duas partes da informação: a localização dos setores censitários e os dados associados a cada um deles. Esse será o objeto inicail a ser usado nas próximas etapas da análise.
+
+::: {.callout-tip}
+## 💡 Dica
+Use `list.files(gm_example_data_path())` para listar todos os arquivos que estão na pasta de exemplos. Nas versões inciais esse pacote tinha
+
+- `2022_dictionary_tracts.xlsx`: dicionário do arquivo de atributos originais do IBGE. Util para conhecer quais dados existem. Abra o arquivo com:
+```{r eval=FALSE}
+file <- gm_example_data_path("2022_dictionary_tracts.xlsx")
+utils::browseURL(file)
+```
+- `ciclovias.gpkg`: Geopackage com as ciclovias de Campos disponíveis no osmdata (em 29/04/2026)
+- `setores.gpkg`: Setores Censitários das sede de Campos
+- `vias_todas.gpkg`: Todas as vidas da sede de Campos
+- `variaveis.csv`: Dados dos setores censitários no formato csv
+- `variaveis.rds`: Dados dos setores censitários no formato nativo do R
+
+:::
+
+# Primeiro Mapa
+
+O comando a seguir é simples. O único objetivo dele é exibir o objeto `base` que acabamos de gerar. O resultado é um mapa estático na janela de gráficos. A janela de gráficos é diferente a depender da interface que você estiver usando: *Viewer* do RStudio; *Quartz 2* no R do MacOS; *Plot* do Positron; ou a janela *R Graphics* no Windows. 
+
+Esse mapa pode ser copido para a área de tranferencia e colado em um arquivo de processadores de texto (MS Word ou Google Docs, por exemplo). Também pode ser salvo em formatos de imagem (PNG ou JPEG).
+
+
+```{r}
+gm_plot_basic(base, pop_abs, "População por setor")
+```
+
+Mas, esse mapa é estático, ou seja, você não consegue navegar nele (dar zoom e ocultar camadas). A sequencia abaixo "liga" o mapa "dinâmico". Isso pode ser ativado com `tmap::tmap_mode("view")`.
+
+
+```{r}
+tmap::tmap_mode("view")
+gm_plot_basic(base, pop_abs, "População por setor")
+```
+
+Finalmente, vale destacar que o mapa dinâmico tem alguns elementos de navegação como o botão para exibição layers e os botões de "+" e "-" do zoom. Esses elementos vão aparecer na figura que for exportada. Para desligar, rode `tmap::tmap_mode("plot")`.
+
+::: {.callout-warning}
+## ⚠️ Atenção
+Esse tutorial usa a opção estática `plot` para agilizar o processamento e a renderização deste material. Apenas mapas estáticos serão exibidos a partir dese ponto neste documento. Se quiser mapas interativos deixe o modo `view` ligado.
+```{r}
+tmap::tmap_mode("plot") #será sempre plot  no texto desse tutorial
+```
+:::
+
+
+## Algumas perfumarias: adicionando camadas com vias e ciclovias (OSM)
+
+O mapa anterior é básico. O próprio nome do comando (`gm_plot_basic`) indica isso. Os próximos passos incluem algumas outras informações na figura gerada usando a base de dados do Open Street Map [@openstreetmapfoundation2023]. As bases, por enquanto são:
+
+- Vias principais da cidade (todas com o `tag=highway` independente da classificação)
+- Ciclovias, que são, teoricamente, as iclovias segregadas, como a cicilovia Patesko
+- Ciclofaixas que seriam as faixas compartilahdas com as pista de rolamento, como na Rua Barão da Lagoa Dourada
+
+Para exibir os exemplos das principais vias da cidade e das ciclovias o pacote `geomarkbr` tem a função `gm_plot_overlay` para exibição de duas ou mais camadas.
+
+  
+```{r}
+vias <- gm_read_example_roads() # Carrega as vias
+ciclovias <- gm_read_example_cycleways() # Carrega as ciclovias
+
+gm_plot_overlay(
+  base = vias,
+  base_col = 'salmon3',
+  overlay = ciclovias,
+  overlay_col = 'steelblue',
+  overlay_lwd = 2,
+  titulo = "Base com as vias principais e as ciclovias como overlay"
+)
+```
+
+```{r}
+gm_plot_overlay(
+  base = base,
+  overlay = list(vias, ciclovias),
+  overlay_col = c('salmon','blue'),
+  overlay_lwd = c(0.5,2),
+  titulo = "Base dos setores censitários com as as vias principais e as ciclovias como overlays"
+)
+```
+
+::: {.callout-note}
+## Observação
+Embora o OpenStreetMap permita representar ciclovias e ciclofaixas por diferentes combinações de tags, a qualidade dessa informação depende do mapeamento local. No de Campos, observamos que parte da infraestrutura cicloviária não está registrada de forma consistente. Algumas ciclovias segregadas aparecem associadas às tags `cycleway:left` ou `cycleway:right`, enquanto não foram encontradas vias classificadas diretamente como `highway = cycleway`. Além disso, algumas ciclofaixas existentes não aparecem na base. Por esse motivo, nesta aula optamos por não utilizar essa diferenciação de ciiclovia/ciclofaixas como variável analítica.
+
+Mas, esse é um exemplo útil para mostrar que dados colaborativos, como os do OpenStreetMap, exigem inspeção crítica antes do uso. Não existem mapas e dados perfeitos e sempre temos de trabalhar com o que temos. A ausência de uma feição na base não significa necessariamente ausência do fenômeno no território. Essa realidade é especialmente importante quando exploramos lugares que não conhecemos intimamente.
+:::
+
+
+# Grade regular
+
+O setor censitário é a menor unidade territorial de coleta dos Censos Demográficos. Trata-se de uma unidade de organização logística definida pelo IBGE com finalidade operacional: cada setor é delimitado de modo a ser percorrido por um agente censitário durante o trabalho de campo. Por isso, seu tamanho e forma estão diretamente relacionados à viabilidade da coleta de dados, e não necessariamente a critérios urbanos, administrativos ou sociais. Em alguns casos, os limites dos setores podem coincidir com bairros, áreas de planejamento ou unidades de vizinhança, mas isso não é uma regra. O setor censitário é, antes de tudo, um território construído para viabilizar o trabalho do recenseador.
+
+Apesar dessa natureza operacional, os setores censitários são a unidade espacial mais detalhada disponibilizada pelo IBGE, sendo amplamente utilizados em análises intraurbanas. No entanto, sua interpretação não é trivial. Os setores apresentam formatos irregulares e, em muitos casos, não formam um mosaico contínuo simples. É relativamente comum a existência de setores que funcionam como “ilhas” dentro de outros, como ocorre em condomínios fechados, grandes equipamentos urbanos, áreas institucionais ou estabelecimentos específicos.
+
+Além disso, há situações em que diferentes setores ocupam o mesmo espaço geográfico em termos horizontais, mas se diferenciam pelo tipo de ocupação, como setores exclusivos para domicílios coletivos ou estabelecimentos. Isso pode gerar a impressão de sobreposição territorial — como “camadas” ou “pavimentos” — quando, na prática, trata-se de uma separação lógica para fins de coleta. Essas características tornam o setor censitário uma unidade extremamente rica para análise, mas que exige cuidado na interpretação espacial e no uso cartográfico.
+
+Por isso, uma alternativa para melhorar a visualização dos materiais cartográficos é a interpolação dos dados presentes nos setores em grades regulares de 1000x1000 metros ou 1x1 grau de latitude por exepmplo. Nesse sentido, os comandos a seguir criam grades regulares sobrepostas aos nossos setores. Essa etapa é um pocuo complexa mas o pacote geomarkbr procura simplificar um pouco essa tarefa.
+
+Na primeira sequencia de comandos, criam-se grades regulares de 30" de latitude que equivale aproximadamente a 940 m na linha do equador.
+
+```{r}
+grid <- gm_make_grid(base, type = "latlon", cellsize = '30s')
+gm_plot_overlay(
+  base = base,
+  overlay = list(grid,vias),
+  overlay_col = c('peachpuff','red'),
+  overlay_lwd = c(0.8,0.5),
+  overlay_alpha = c(0,1),
+  titulo = "Base dos setores censitários com as as vias principais e as grade recém criada como overlay"
+)
+```
+
+## Sobre a sistema de projeções
+
+Um complicador adicional é que até agora trabalhamos com coordenadas geográficas (latitude e longitude). Para escalas intraurbanas o uso de coordenadas métricas é uma prática recomendável pois vai facilitar nossos buffers e outras operaçoes algébricas mais a frente. Sendo assim antes de irmos para os próximos passos vamos converter os nossos mapas que estão no sistema SIRGAS 2000 em lat/long (EPGS:4674) para UTM no sistema SIRGAS 2000 / UTM zone 24S (EPGS:31984). Para maiores consultas rápidas sobre o sistemas de coordenadas consultem @iogp2026.
+
+Também nessa sequência vamos criar grades regualres de 1000x1000 metros.
+
+
+```{r}
+base_utm <- sf::st_transform(base, 31984)
+vias_utm = sf::st_transform(vias, 31984)
+ciclovias_utm = sf::st_transform(ciclovias, 31984)
+
+grid_utm <- gm_make_grid(base, type = "metric", cellsize = 1000)
+
+gm_plot_overlay(
+  base = base_utm,
+  overlay = list(grid_utm,vias_utm),
+  overlay_col = c('peachpuff','red'),
+  overlay_lwd = c(0.8,0.5),
+  overlay_alpha = c(0,1),
+  titulo = "Base dos setores censitários com as as vias principais e as grade recém criada como overlay"
+)
+```
+
+::: {.callout-note}
+## Observação
+O OpenSreetMap usa como coordenadas padrão o WGS84, em lat/long (EPGS:4326). Os exemplos desse tutorial já estão com as vias e ciclovias converitdas para SIRGAS 2000 / UTM zone 24S (EPGS:31984)
+:::
+
+## Interpolação dos dados da base
+
+A partir deste ponto, entramos de fato no problema central do geomarketing: como transformar informações agregadas em unidades espaciais irregulares (os setores censitários) em uma representação mais contínua e comparável no espaço.
+
+Os dados do Censo são disponibilizados por setor censitário, que é uma unidade definida para fins operacionais de coleta. Isso significa que os valores observados - como população, idade média ou proporção de mulheres - estão associados ao setor como um todo, e não a localizações específicas dentro dele. Na prática, sabemos que esses fenômenos não estão distribuídos de forma uniforme no território: a população se concentra em algumas áreas, equipamentos urbanos ocupam outras, e há grandes variações internas mesmo dentro de um único setor [@castro2019].
+
+Para viabilizar a análise espacial em uma escala mais fina, adotamos uma simplificação importante: assumimos que os atributos estão distribuídos de forma homogênea dentro de cada setor. Em outras palavras, tratamos cada setor como se seus valores estivessem “espalhados” de maneira uniforme sobre sua área. Essa hipótese permite redistribuir os dados para uma nova unidade espacial - no nosso caso, uma grade regular - utilizando a proporção de área de sobreposição entre setores e células da grade. Assim, conseguimos construir uma representação contínua do fenômeno, reduzindo o chamado “efeito mosaico” típico dos mapas por unidades administrativas e permitindo análises mais detalhadas do espaço urbano [@jakob2006] .
+
+É importante destacar que essa é uma aproximação. Ela não captura a distribuição real da população dentro dos setores, mas fornece uma base consistente e operacional para análise, especialmente quando não há informações mais detalhadas disponíveis.
+
+```{r}
+grid_base = gm_interpolation_2_grid(grid_utm, base_utm, 
+                        vars_extensive = 'pop_abs',
+                        vars_intensive= 'idade_media')
+
+gm_plot_basic(grid_base, var = 'pop_abs', titulo = 'População Absoluuta no grid')
+gm_plot_basic(grid_base, var = 'idade_media', titulo = 'Idade Média no grid')
+
+```
+
+::: {.callout-tip}
+## 💡 Dica
+
+Há uma função chamada `gm_interpolation_2_grid_fast` no pacote, muito similar à `gm_interpolation_2_grid`. Ela foi construída para ser executada mais rapidamente, sendo especialmente útil em atividades de sala de aula ou em situações com limitações de processamento.
+
+A função `gm_interpolation_2_grid`, por sua vez, implementa explicitamente o processo de interpolação por área e foi pensada para oferecer maior controle e flexibilidade. Por isso, ela é mais adequada para desenvolvimento, experimentação e possíveis extensões do método.
+
+No estágio atual do pacote, as duas funções coexistem com objetivos distintos: uma mais rápida e simplificada, outra mais completa e aberta a modificações. No futuro, é possível que essas abordagens sejam integradas em uma única função mais robusta.
+:::
+
+
+# Considerações Finais
+
+Essas etapas constituem a base para análises mais avançadas de localização, como delimitação de áreas de influência, análise de acessibilidade e estimação de demanda potencial. A partir do momento em que conseguimos representar os dados em uma estrutura espacial contínua (como a grade regular construída neste tutorial) passamos a trabalhar com uma base muito mais adequada para esse tipo de análise. No contexto do geomarketing, a localização deixa de ser apenas um atributo e passa a ser uma variável central na tomada de decisão. A combinação entre dados demográficos, infraestrutura urbana e distribuição espacial da população permite responder a perguntas fundamentais, como onde estão os potenciais consumidores, quais áreas apresentam maior concentração de demanda e quais regiões estão subatendidas por determinados serviços [@cortex2025].
+
+A partir dessa base, é possível avançar para análises mais sofisticadas. A delimitação de áreas de influência, por exemplo, busca identificar de onde uma determinada loja ou serviço atrai seus usuários, podendo ser definida por distância, tempo de deslocamento ou comportamento observado. Já a análise de acessibilidade incorpora a rede de transporte e permite avaliar não apenas a proximidade, mas a facilidade de acesso a esses serviços. Por fim, a estimação de demanda potencial combina essas informações com perfis demográficos para quantificar o mercado disponível em cada localização.
+
+É importante destacar que todas essas análises dependem diretamente da qualidade das etapas anteriores. A forma como os dados são organizados, interpolados e representados no espaço influencia diretamente os resultados obtidos. Por isso, mais do que ferramentas específicas, o que se constrói aqui é uma lógica de análise espacial que pode ser adaptada a diferentes problemas e contextos.
+
+Em síntese, este tutorial apresenta um ponto de partida. A partir dele, é possível explorar uma ampla gama de aplicações, tanto no setor privado — como na definição de localização de lojas — quanto no planejamento público, como na distribuição de equipamentos urbanos e serviços essenciais.
+
+
+# Referências

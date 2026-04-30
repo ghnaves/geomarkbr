@@ -5,3 +5,5 @@
 ^sandbox$
 ^\.positai$
 ^\.claude$
+^tutorials$
+^tutorials/.*$

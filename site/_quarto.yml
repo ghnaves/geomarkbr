@@ -1,0 +1,22 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "Geomarketing UFF"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Início
+      - href: tutorials/introducao_geomarketing.qmd
+        text: Tutorial
+
+format:
+  html:
+    theme: journal
+    toc: true
+    number-sections: true
+    embed-resources: true
+
+bibliography: tutorials/references.bib
+csl: tutorials/planeta-zotero-abnt.csl

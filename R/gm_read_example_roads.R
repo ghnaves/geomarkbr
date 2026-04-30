@@ -16,7 +16,7 @@
 #' @export
 gm_read_example_roads <- function() {
 
-  path <- system.file("extdata", "vias_principais.gpkg", package = "geomarkbr")
+  path <- system.file("extdata", "vias_todas.gpkg", package = "geomarkbr")
 
   if (path == "") {
     stop("Arquivo de exemplo não encontrado no pacote.")

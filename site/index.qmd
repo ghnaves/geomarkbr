@@ -1,0 +1,19 @@
+---
+title: "Geomarketing"
+---
+
+# Bem-vindo
+
+Material da disciplina de Geomarketing.
+
+## Conteúdo
+
+- [Introdução](tutorials/introducao_geomarketing.html)
+
+## Sobre o pacote
+
+O pacote `geomarkbr` [@givisiez2026] foi desenvolvido para introduzir os alunos no uso do R e RStudio com atividades de análise espacial em contexto de ensino de uma disciplina optativa da graduação.
+
+
+## Referências
+

@@ -8,6 +8,7 @@ gm_make_grid(
   shape,
   type = c("metric", "latlon"),
   cellsize = 100,
+  offset = NULL,
   crs_out = NULL,
   clip = TRUE
 )
@@ -22,6 +23,8 @@ para grade em graus.}
 valor numérico em metros. Quando \code{type = "latlon"}, pode ser um valor
 numérico em graus ou um dos valores: \code{"1d"}, \code{"30m"}, \code{"15m"}, \code{"1m"},
 \code{"30s"} ou \code{"15s"}.}
+
+\item{offset}{Origem da grade. O default é latitude e longitude zero}
 
 \item{crs_out}{Sistema de coordenadas usado para criar a grade. Se \code{NULL},
 usa \code{31984} para \code{type = "metric"} e \code{4674} para \code{type = "latlon"}.}

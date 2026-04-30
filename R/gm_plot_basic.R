@@ -21,9 +21,9 @@
 #' }
 #'
 #' @export
-gm_plot_basic <- function(x, var, titulo = NULL, legenda = NULL) {
+gm_plot_basic <- function(shape, var, titulo = NULL, legenda = NULL) {
 
-  if (!inherits(x, "sf")) {
+  if (!inherits(shape, "sf")) {
     stop("O objeto 'x' deve ser um objeto sf.")
   }
 
@@ -38,7 +38,7 @@ gm_plot_basic <- function(x, var, titulo = NULL, legenda = NULL) {
     legenda <- var_name
   }
 
-  tmap::tm_shape(x) +
+  tmap::tm_shape(shape) +
     tmap::tm_polygons(
       fill = var_name,
       fill.scale = tmap::tm_scale(values = "viridis"),

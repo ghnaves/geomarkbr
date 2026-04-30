@@ -12,6 +12,7 @@
 #'   valor numérico em metros. Quando `type = "latlon"`, pode ser um valor
 #'   numérico em graus ou um dos valores: `"1d"`, `"30m"`, `"15m"`, `"1m"`,
 #'   `"30s"` ou `"15s"`.
+#' @param offset Origem da grade. O default é latitude e longitude zero
 #' @param crs_out Sistema de coordenadas usado para criar a grade. Se `NULL`,
 #'   usa `31984` para `type = "metric"` e `4674` para `type = "latlon"`.
 #' @param clip Se `TRUE`, mantém apenas as células que intersectam a geometria
@@ -31,11 +32,14 @@
 #' }
 #'
 #' @export
-gm_make_grid <- function(shape,
-                         type = c("metric", "latlon"),
-                         cellsize = 100,
-                         crs_out = NULL,
-                         clip = TRUE) {
+gm_make_grid <- function(
+    shape,
+    type = c("metric", "latlon"),
+    cellsize = 100,
+    offset = NULL,
+    crs_out = NULL,
+    clip = TRUE
+) {
 
   type <- match.arg(type)
 
@@ -51,69 +55,85 @@ gm_make_grid <- function(shape,
     crs_out <- if (type == "metric") 31984 else 4674
   }
 
+  # --- reprojetar ---
   shape_grid <- sf::st_transform(shape, crs_out)
 
+  # --- tratar cellsize ---
   if (type == "metric") {
 
     if (sf::st_is_longlat(shape_grid)) {
-      warning(
-        "O CRS informado em 'crs_out' parece ser geográfico (graus). ",
-        "Para grade métrica, use um CRS projetado, como UTM."
-      )
+      warning("CRS parece geográfico. Para grade métrica use CRS projetado.")
     }
 
     if (!is.numeric(cellsize)) {
-      stop("Quando type = 'metric', 'cellsize' deve ser numérico, em metros.")
+      stop("Para type='metric', cellsize deve ser numérico (metros).")
     }
 
-    grid <- sf::st_make_grid(
-      shape_grid,
-      cellsize = cellsize,
-      square = TRUE
-    )
+    cellsize_use <- cellsize
 
   } else {
 
     if (!sf::st_is_longlat(shape_grid)) {
-      warning(
-        "O CRS informado em 'crs_out' não parece ser geográfico. ",
-        "Para grade latlon, use um CRS em latitude/longitude, como EPSG:4674."
-      )
+      warning("CRS não parece geográfico.")
     }
 
     if (is.character(cellsize)) {
       cellsize <- switch(
         cellsize,
         "1d"  = 1,
-        "30m" = 30 / 60,
-        "15m" = 15 / 60,
-        "1m"  = 1 / 60,
-        "30s" = 30 / 3600,
-        "15s" = 15 / 3600,
-        stop(
-          "cellsize inválido para grade latlon. ",
-          "Valores válidos: 1d, 30m, 15m, 1m, 30s e 15s."
-        )
+        "30m" = 30/60,
+        "15m" = 15/60,
+        "1m"  = 1/60,
+        "30s" = 30/3600,
+        "15s" = 15/3600,
+        stop("cellsize inválido")
       )
     }
 
-    grid <- sf::st_make_grid(
-      shape_grid,
-      cellsize = c(cellsize, cellsize),
-      square = TRUE
-    )
+    cellsize_use <- c(cellsize, cellsize)
   }
 
+  # --- offset ---
+  if (is.null(offset)) {
+    offset_use <- NULL
+  } else {
+    if (!is.numeric(offset) || length(offset) != 2) {
+      stop("offset deve ser numérico de comprimento 2")
+    }
+    offset_use <- offset
+  }
+
+  # --- criar grid ---
+  if (is.null(offset)) {
+
+    grid <- sf::st_make_grid(
+      shape_grid,
+      cellsize = cellsize_use,
+      square = TRUE
+    )
+
+  } else {
+
+    grid <- sf::st_make_grid(
+      shape_grid,
+      cellsize = cellsize_use,
+      offset = offset,
+      square = TRUE
+    )
+
+  }
+
+  # --- converter ---
   grid <- sf::st_as_sf(grid)
   names(grid) <- "geom"
   sf::st_geometry(grid) <- "geom"
   grid$id_grid <- seq_len(nrow(grid))
 
+  # --- recorte ---
   if (clip) {
     shape_union <- sf::st_union(sf::st_geometry(shape_grid))
     keep <- sf::st_intersects(grid, shape_union, sparse = FALSE)[, 1]
     grid <- grid[keep, ]
-    sf::st_geometry(grid) <- "geom"
   }
 
   grid

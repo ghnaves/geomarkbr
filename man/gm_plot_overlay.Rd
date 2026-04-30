@@ -2,52 +2,61 @@
 % Please edit documentation in R/gm_plot_overlay.R
 \name{gm_plot_overlay}
 \alias{gm_plot_overlay}
-\title{Criar mapa com duas camadas espaciais}
+\title{Criar mapa com camadas espaciais sobrepostas}
 \usage{
 gm_plot_overlay(
   base,
   overlay,
   titulo = NULL,
   base_fill = "grey90",
-  base_col = "white",
-  base_alpha = 0.7,
+  base_col = "grey70",
+  base_alpha = 0.5,
+  base_lwd = 1,
   overlay_fill = NA,
   overlay_col = "red",
   overlay_alpha = 0.7,
-  overlay_lwd = 2
+  overlay_lwd = 1,
+  overlay_group = NULL
 )
 }
 \arguments{
 \item{base}{Objeto \code{sf} da camada de base, por exemplo setores censitários.}
 
-\item{overlay}{Objeto \code{sf} da camada sobreposta, por exemplo vias, ciclovias
-ou uma grade regular.}
+\item{overlay}{Objeto \code{sf} ou lista de objetos \code{sf} a serem sobrepostos à
+camada de base, por exemplo vias, ciclovias ou uma grade regular.}
 
 \item{titulo}{Título do mapa. Se \code{NULL}, o mapa é criado sem título.}
 
-\item{base_fill}{Cor de preenchimento da camada de base.}
+\item{base_fill}{Cor de preenchimento da camada de base, quando ela for
+formada por polígonos.}
 
-\item{base_col}{Cor da borda da camada de base.}
+\item{base_col}{Cor da camada de base ou da borda, quando for polígono.}
 
-\item{base_alpha}{Transparência do preenchimento da camada de base.}
+\item{base_alpha}{Transparência da camada de base.}
 
-\item{overlay_fill}{Cor de preenchimento da camada sobreposta, usada quando
-\code{overlay} é uma camada de polígonos.}
+\item{base_lwd}{Espessura da camada de base, quando ela for formada por
+linhas.}
 
-\item{overlay_col}{Cor da camada sobreposta.}
+\item{overlay_fill}{Cor de preenchimento das camadas sobrepostas, usada
+quando a camada for formada por polígonos.}
 
-\item{overlay_alpha}{Transparência da camada sobreposta.}
+\item{overlay_col}{Cor das camadas sobrepostas.}
 
-\item{overlay_lwd}{Espessura da camada sobreposta, usada quando \code{overlay}
-é uma camada de linhas.}
+\item{overlay_alpha}{Transparência das camadas sobrepostas.}
+
+\item{overlay_lwd}{Espessura das camadas sobrepostas, usada quando a camada
+for formada por linhas.}
+
+\item{overlay_group}{Nome das camadas sobrepostas no modo interativo. Se
+\code{NULL}, usa nomes automáticos.}
 }
 \value{
 Objeto \code{tmap}.
 }
 \description{
-Cria um mapa simples com uma camada de base e uma camada sobreposta.
-A função identifica automaticamente se a camada sobreposta é formada por
-pontos, linhas ou polígonos.
+Cria um mapa simples com uma camada de base e uma ou mais camadas
+sobrepostas. A função identifica automaticamente se cada camada sobreposta
+é formada por pontos, linhas ou polígonos.
 }
 \examples{
 \dontrun{
@@ -57,11 +66,15 @@ base <- gm_join_data(
 )
 
 grid <- gm_make_grid(base, type = "metric", cellsize = 1000)
+vias <- gm_read_example_roads()
 
 gm_plot_overlay(
   base = base,
-  overlay = grid,
-  titulo = "Grade regular sobre setores"
+  overlay = list(grid, vias),
+  titulo = "Grade e vias sobre setores",
+  overlay_col = c("black", "red"),
+  overlay_lwd = c(1, 2),
+  overlay_group = c("Grade", "Vias")
 )
 }
 

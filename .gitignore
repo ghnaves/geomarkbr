@@ -7,4 +7,8 @@
 sandbox/
 .positai
 inst/extdata/*.html
+tutorials/*.html
 inst/doc
+
+/.quarto/
+**/*.quarto_ipynb
