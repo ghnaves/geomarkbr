@@ -14,6 +14,5 @@ Material da disciplina de Geomarketing.
 
 O pacote `geomarkbr` [@givisiez2026] foi desenvolvido para introduzir os alunos no uso do R e RStudio com atividades de análise espacial em contexto de ensino de uma disciplina optativa da graduação.
 
-
 ## Referências
 
