@@ -9,7 +9,11 @@ website:
       - href: index.qmd
         text: Início
       - href: tutorials/introducao_geomarketing.qmd
-        text: Tutorial
+        text: Introdução ao Geomarketing
+      - href: tutorials/preparacao_dados.qmd
+        text: Preparação de Dados
+      - href: tutorials/analise_localizacao.qmd
+        text: Análise de Localização
 
 format:
   html:

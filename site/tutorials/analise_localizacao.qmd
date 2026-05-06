@@ -1,0 +1,56 @@
+---
+title: "Preparação de dados"
+subtitle: "Aplicações com o pacote geomarkbr"
+author: "Gustavo Givisiez"
+date: today
+lang: pt-BR
+
+project:
+  type: website
+  output-dir: docs
+  
+format:
+  html:
+    embed-resources: true
+    self_contained: true
+    theme: journal
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    number-sections: true
+    code-fold: show
+    code-tools: true
+    highlight-style: tango
+
+execute:
+  eval: false
+  echo: true
+  warning: false
+  message: false
+
+bibliography: references.bib
+csl: planeta-zotero-abnt.csl
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, eval = TRUE}
+library(geomarkbr)
+library(dplyr)
+library(sf)
+library(tmap)
+tmap::tmap_mode("plot")
+```
+
+# Introdução
+
+
+
+
+
+# Referências

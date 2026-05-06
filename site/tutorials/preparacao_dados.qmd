@@ -1,0 +1,398 @@
+---
+title: "Preparação de dados"
+subtitle: "Aplicações com o pacote geomarkbr"
+author: "Gustavo Givisiez"
+date: today
+lang: pt-BR
+
+project:
+  type: website
+  output-dir: docs
+  
+format:
+  html:
+    embed-resources: true
+    self_contained: true
+    theme: journal
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    number-sections: true
+    code-fold: show
+    code-tools: true
+    highlight-style: tango
+
+execute:
+  eval: true
+  echo: true
+  warning: false
+  message: false
+
+bibliography: references.bib
+csl: planeta-zotero-abnt.csl
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, eval = TRUE}
+library(dplyr)
+library(sf)
+library(tmap)
+library(geomarkbr)
+tmap::tmap_mode("plot")
+```
+
+# Introdução
+
+O objetivo dessa aula é preparar os dados que serão usados na análise de localização. Não vamos aprender como desenhar mapas: a aula de hoje é sobre construir a base que torna o mapa possível. Para isso ela se distribui em duas seções. A primeira dela é dedicada a importação de dados dos Agregados por Setor Censitário do Censo Demográfico de 2022 do Brasil. Ele usa o pacote `geomarkbr` [@givisiez2026] e dois outros pacotes densenvolvidos pelo IPEA que são e o `censobr` [@pereira2023a] e o `geobr` [@goncalves2009a]
+
+# Censo Demográfico
+
+## Baixar dados do Censo
+
+Para baixar as shapes dos setores censitários o comando `gm_read_sectors_shape` busca as shapes no servidor do IPEA. Na sequencia baixamos os dados de São José de Ubá (RJ).
+
+```{r, eval = FALSE, echo = TRUE}
+gm_read_sectors_shape(code = 3305133) # São José de Ubá (RJ)
+```
+
+
+Entretanto, o download direto dos setores censitários via internet pode apresentar instabilidade, seja por limitações de conexão ou mudanças nos servidores. Para garantir que todos consigam acompanhar a aula sem problemas, utilizaremos uma base local para o Rio de Janeiro previamente baixada pelo pacote `geobr`.
+
+A partir dessa base, iremos **filtrar apenas o município de São João da Barra (código 3305000)**, trabalhando com um conjunto de dados menor e mais adequado para as atividades em sala.
+
+```{r, echo = FALSE, eval = FALSE}
+# dev
+setores_rj <- gm_read_sectors_data(code = 33)|>
+  dplyr::mutate(code_tract = as.character(code_tract))
+df::write_sf(setores_rj,"site/tutorials/dados/setores_rj.gpkg", overwrite = TRUE)
+```
+
+```{r}
+# Base local (RJ inteiro) + filtro para São João da Barra
+
+#dados_pf = "site/tutorials/dados/" #dev
+dados_pf = here::here('tutorials/dados/') # render
+
+setores <- gm_read_sectors_shape(
+  path = paste0(dados_pf,"shape_rj.gpkg"),
+  code = 3305000
+)
+
+gm_plot_basic(setores, var = 'zone') 
+```
+
+::: {.callout-tip}
+## 💡 Dica
+Os setores censitários podem ser obtidos diretamente por meio de uma ampla gama de codigos. O argumento `code` da função `gm_read_sectors` segue lógica similar ao pacote `geobr` com algumas variações:
+
+- Se for informado um código de município com 7 dígitos (por exemplo, `3305000`), a função retorna apenas os setores desse município.
+- Se for informado um código de estado (por exemplo, `33`) ou a sigla da unidade da federação (por exemplo, `"RJ"`), a função retorna todos os setores daquele estado.
+- Se for informado `"all"`, a função retorna os setores de todo o Brasil.
+- Há outras formas de baixar dados dos Setores Censitários previstos nessa função (bairro, cidade, regiões intermediárias, etc.). Consulte `?gm_read_sectors` para mais informações
+
+Essa flexibilidade permite trabalhar com diferentes escalas territoriais, desde um único município até o país inteiro.
+:::
+
+Para baixar os dados propriamente dito, a função é `gm_read_sectors_data`, como a seguir. No default, a fução baixa o `dataset='Basico'`
+
+```{r, eval = FALSE, echo = FALSE}
+gm_read_sectors_data(code = 3305133) # São José de Ubá (RJ)
+```
+
+Mas, como antes, nem sempre os dados estão disponíveis e por isso vamos usar a base com dados locais para o Rio de Janeiro. Selecionamos apenas o município de São João da Barra
+
+```{r, echo = FALSE, eval = FALSE}
+# dev
+dados_basico_rj <- gm_read_sectors_data(code = 33)
+readr::write_rds(dados_basico_rj,"site/tutorials/dados/data_basico_rj.rds")
+```
+
+```{r}
+# Base local (RJ inteiro) + filtro para São João da Barra
+dados_basico <- gm_read_sectors_data(
+  path = paste0(dados_pf,"data_basico_rj.rds"),
+  code = 3305000
+)
+```
+
+Lembrem-se que para juntar dados com setores é pelo `gm_join_data`
+
+```{r}
+base_basico <- gm_join_data(dados_basico, setores)
+
+gm_plot_basic(base_basico, var = 'V0007') 
+```
+
+
+## Entendendo o dicionário do censo
+
+Há infinitas bases de dados no Brasil e no munndo. Mas, elas são ilegíveis e inúteis sem o dicionário, que deve sempre (ou quase sempre) acompanhar as bases de dados. Essa seção se dedica a entender o dicionário e, por meio dele, selecionar as variáveis que nos interessam. O dicionário dos setores censitários são disponibilizados pelo `censobr::data_dictionary(year = 2022, dataset = "tracts")` e já estão salvos na estrutura do pacote.
+
+O comando a seguir acha esse dicionário e abre o Excel.
+
+```{r}
+file <- gm_example_data_path("2022_dictionary_tracts.xlsx")
+utils::browseURL(file)
+```
+
+O arquivo Excel do dicionário é organizado em planilhas, cada uma correspondente a um dos conjuntos de dados disponíveis (`dataset`) no `censobr::read_tracts()`, além de planilhas auxiliares com informações complementares. A planilha **Siglas_Basico** apresenta o dicionário das siglas utilizadas nas variáveis V0001 a V0007 do conjunto `dataset = "Basico"`. As demais planilhas correspondem aos principais conjuntos temáticos de variáveis: **Basico**, **Pessoas**, **Domicilios**, **Obitos**, **Indigenas**, **Quilombolas**, **ResponsavelRenda** e **Entorno**. Cada uma dessas planilhas descreve as variáveis disponíveis em seu respectivo dataset, permitindo identificar seus códigos, descrições e formas de uso na análise dos dados censitários.
+
+
+## Selecionar variáveis
+
+A partir desse ponto, começa o trabalho “real” de selecionar as variáveis que nos interessam no banco de dados. Nesse exemplo vamos filtar a renda média do chefe no setor censitário e calcular a proporção de crianças dentro do setor.
+
+::: {.callout-tip}
+## 💡 Dica
+Lembrem-se que podemos filtrar desde já quais *territórios* vamos trabalhar. No exemplo abaixo filtramos os dados sobre a renda do chefe e dados demográficos para o município de São João da Barra.
+:::
+
+```{r, echo = FALSE, eval = FALSE}
+# dev
+dados_pessoas_rj <- gm_read_sectors_data(code = 33,
+                                dataset = "Pessoas")
+
+dados_responsavelrenda_rj <- gm_read_sectors_data(code = 33,
+                                dataset = "ResponsavelRenda")
+
+readr::write_rds(dados_pessoas_rj,"site/tutorials/dados/data_pessoas_rj.rds")
+readr::write_rds(dados_responsavelrenda_rj,"site/tutorials/dados/data_responsavelrenda_rj.rds")
+
+```
+
+```{r}
+dados_pessoas <- gm_read_sectors_data(code = 3305000,
+                                      path = paste0(dados_pf,"data_pessoas_rj.rds"),
+                                      dataset = "Pessoas")
+
+dados_responsavelrenda <- gm_read_sectors_data(code = 3305000,
+                                               path = paste0(dados_pf,"data_responsavelrenda_rj.rds"),
+                                               dataset = "ResponsavelRenda")
+
+```
+
+
+### Renomear variáveis e limpar o banco
+
+Dois problemas surgem quando estamos trabalhando com grandes bases de dados. Sao muitas variáveis: o banco de dados depessoas tem 724 variáveis e o da renda é até menorzinho com 54 colunas. A primeira tarefa é deixar na base apenas as vaiáveis que nos interessam.
+
+Para a renda dos setores censitários temos duas medidas de tendência central:
+- **V06004**: Rendimento nominal (em reais em 01/08/2022) médio dos  responsáveis com rendimentos (DPP ocupados)
+- **V06005**: Variância do rendimento mensal dos responsáveis com rendimentos (DPP ocupados) 
+
+Para a proporção de crianças:
+- **demografia_V01006**: Quantidade de moradores
+- **demografia_V01031**: Quantidade de moradores de 0 a 4 anos
+- **demografia_V01032**: Quantidade de moradores de 5 a 9 anos
+- **demografia_V01033**: Quantidade de moradores de 10 a 14 anos
+
+Precisamos ainda deixar nas tabelas de dados a variável `code_tract` que identifica o setor censitário e é a chave de união das tabelas.
+
+Sem esssa seleção prévia, o código e as nases de dados ficam muito mais difíceis de entender. Antes de criar mapas ou calcular indicadores, precisamos organizar a base de dados. Essa etapa é importante porque as bases originais do Censo têm muitas variáveis, com nomes pouco intuitivos. Por isso, vamos usar o pacote `dplyr` [@wickham2014a], que é uma biblioteca que faz parte da coleção `tidyverse` [wickham2019b], para selecionar apenas as colunas necessárias e renomeá-las de forma mais clara.
+
+
+A ideia não é decorar todos os comandos, mas entender o fluxo. Assim, os passos quase sempre serão: 
+
+ 1. `Selecionar` colunas e `Filtar` o conjunto de dados
+ 2. `Renomear` colunas
+ 3. `Calcular` indicadores
+ 4. `Salvar` a base processada
+ 
+As três primeiras etapas podem ser encadeadas em uma sequência de pipes (`%>%`), como no codigo a seguir. Após o processamento, é uma boa prática salvar a base já organizada. Isso evita repetir todas as etapas de preparação sempre que o projeto for aberto novamente.
+ 
+ 
+```{r}
+dados_responsavelrenda_clean = dados_responsavelrenda %>%
+  select(code_tract, V06004, V06005) %>%
+  rename(renda_media = V06004,
+         renda_var = V06005)
+
+readr::write_rds(
+  dados_responsavelrenda_clean,
+  "dados/dados_responsavelrenda_clean.rds"
+)
+
+dados_pessoas_clean = dados_pessoas %>%
+  select(code_tract, demografia_V01006, demografia_V01031, demografia_V01032, demografia_V01033) %>%
+  rename(pop = demografia_V01006,
+         pop_abs_00_04 = demografia_V01031,
+         pop_abs_05_09 = demografia_V01032,
+         pop_abs_10_14 = demografia_V01033) %>%
+  mutate(
+    pop_criancas =
+      coalesce(pop_abs_00_04, 0) +
+      coalesce(pop_abs_05_09, 0) +
+      coalesce(pop_abs_10_14, 0),
+  perc_criancas = pop_criancas/pop)
+base_basico <- gm_join_data(setores, dados_basico)
+
+readr::write_rds(
+  dados_pessoas_clean,
+  "dados/dados_pessoas_clean.rds"
+)
+
+```
+
+::: {.callout-note collapse="true"}
+## Para saber mais
+O pacote `dplyr` é um pacote construído para manipulação de dados e usa tipo de gramática para isso. Essa gramática prevê um conjunto de funções (*verbos*) consistentes para ajudar a resolver os principais desafios da manipulação de base de dados. A sintaxe dessa gramática é `x %>% função` onde o `x` seria o dataframe ou a shape (o *sujeito*) e a `função` é um comando do R. O símbolo `%>%` é, por convenção chamado de pipe (conector, em português) que junta um objeto com a função. Escrever o comando `x %>% comando` é o mesmo que escrever `comando(x)` (execute esse comando em x).
+
+```{r}
+x<-c(3,6,9,26)
+sum(x)
+## É o mesmo que
+x %>% sum()
+```
+
+Alguns dos principais comandos do `dplyr` são:
+
+**`select()`**: Seleciona colunas da base de dados. É útil para reduzir o número de variáveis e manter apenas aquelas necessárias para a análise. `select(code_tract, pop, renda_media)` seleciona as variáveis `code_tract`, `pop` e `renda_media`.
+
+**`filter()`**: Filtra linhas da base de dados a partir de alguma condição lógica. `filter(pop > 1000)` mantém apenas os setores com mais de 1000 moradores.
+
+**`rename()`**: Renomeia variáveis para nomes mais curtos ou mais fáceis de interpretar. `rename(pop_total = V01006)` renomeia variável `V01006` de `pop_total`.
+
+**`mutate()`**: Cria novas variáveis ou altera variáveis existentes. `mutate(densidade = pop / area)` calcula a densidade populacional.
+
+**`coalesce()`**: Substitui valores ausentes (`NA`) por outro valor. `coalesce(pop_abs_00_04, 0)` substitui valores ausentes por zero. O comando `coalesce`  é muito útil porque operações matemáticas envolvendo valores `NA` (ou *missing*) normalmente retornam `NA`.
+::: 
+
+## Fazendo o 
+
+## Calcular indicadores simples
+
+```{r eval=FALSE}
+mutate(
+  perc_mulheres = pop_mulheres / pop_abs
+)
+```
+
+idade média
+idade mediana
+renda do chefe
+
+
+## Salvar uma base pronta em .rds
+
+```{r eval=FALSE}
+write_rds(...)
+```
+
+
+## Juntar com os setores
+
+
+::: {.callout-important}
+## 📝 Exercício
+Use `list.files(gm_example_data_path())` para listar todos os arquivos que estão na pasta de exemplos. Nas versões inciais esse pacote tinha
+
+- `2022_dictionary_tracts.xlsx`: dicionário do arquivo de atributos originais do IBGE. Util para conhecer quais dados existem. Abra o arquivo com:
+```{r eval=FALSE}
+file <- gm_example_data_path("2022_dictionary_tracts.xlsx")
+utils::browseURL(file)
+```
+- `ciclovias.gpkg`: Geopackage com as ciclovias de Campos disponíveis no osmdata (em 29/04/2026)
+- `setores.gpkg`: Setores Censitários das sede de Campos
+- `vias_todas.gpkg`: Todas as vidas da sede de Campos
+- `variaveis.csv`: Dados dos setores censitários no formato csv
+- `variaveis.rds`: Dados dos setores censitários no formato nativo do R
+
+:::
+
+
+# OpenStreetMapa
+
+isso pode não caber
+
+## Entendendo as tags de vias
+
+Mostrar exatamente o descobri
+
+* highway = residential
+* cycleway:left = lane
+* inconsistência dos dados
+
+## Entendendo as tags de pontos de interesse
+
+
+::: {.callout-tip}
+## 💡 Dica
+Use `list.files(gm_example_data_path())` para listar todos os arquivos que estão na pasta de exemplos. Nas versões inciais esse pacote tinha
+
+- `2022_dictionary_tracts.xlsx`: dicionário do arquivo de atributos originais do IBGE. Util para conhecer quais dados existem. Abra o arquivo com:
+```{r eval=FALSE}
+file <- gm_example_data_path("2022_dictionary_tracts.xlsx")
+utils::browseURL(file)
+```
+- `ciclovias.gpkg`: Geopackage com as ciclovias de Campos disponíveis no osmdata (em 29/04/2026)
+- `setores.gpkg`: Setores Censitários das sede de Campos
+- `vias_todas.gpkg`: Todas as vidas da sede de Campos
+- `variaveis.csv`: Dados dos setores censitários no formato csv
+- `variaveis.rds`: Dados dos setores censitários no formato nativo do R
+
+:::
+
+# Primeiro Mapa
+
+
+::: {.callout-warning}
+## ⚠️ Atenção
+Esse tutorial usa a opção estática `plot` para agilizar o processamento e a renderização deste material. Apenas mapas estáticos serão exibidos a partir dese ponto neste documento. Se quiser mapas interativos deixe o modo `view` ligado.
+```{r}
+tmap::tmap_mode("plot") #será sempre plot  no texto desse tutorial
+```
+:::
+
+
+## Algumas perfumarias: adicionando camadas com vias e ciclovias (OSM)
+
+
+
+::: {.callout-note}
+## Observação
+Embora o OpenStreetMap permita representar ciclovias e ciclofaixas por diferentes combinações de tags, a qualidade dessa informação depende do mapeamento local. No de Campos, observamos que parte da infraestrutura cicloviária não está registrada de forma consistente. Algumas ciclovias segregadas aparecem associadas às tags `cycleway:left` ou `cycleway:right`, enquanto não foram encontradas vias classificadas diretamente como `highway = cycleway`. Além disso, algumas ciclofaixas existentes não aparecem na base. Por esse motivo, nesta aula optamos por não utilizar essa diferenciação de ciiclovia/ciclofaixas como variável analítica.
+
+Mas, esse é um exemplo útil para mostrar que dados colaborativos, como os do OpenStreetMap, exigem inspeção crítica antes do uso. Não existem mapas e dados perfeitos e sempre temos de trabalhar com o que temos. A ausência de uma feição na base não significa necessariamente ausência do fenômeno no território. Essa realidade é especialmente importante quando exploramos lugares que não conhecemos intimamente.
+:::
+
+
+# Grade regular
+
+
+
+## Sobre a sistema de projeções
+
+
+
+::: {.callout-note}
+## 🔭 Observação
+O OpenSreetMap usa como coordenadas padrão o WGS84, em lat/long (EPGS:4326). Os exemplos desse tutorial já estão com as vias e ciclovias converitdas para SIRGAS 2000 / UTM zone 24S (EPGS:31984)
+:::
+
+## Interpolação dos dados da base
+
+
+
+::: {.callout-tip}
+## 💡 Dica
+
+Há uma função chamada `gm_interpolation_2_grid_fast` no pacote, muito similar à `gm_interpolation_2_grid`. Ela foi construída para ser executada mais rapidamente, sendo especialmente útil em atividades de sala de aula ou em situações com limitações de processamento.
+
+A função `gm_interpolation_2_grid`, por sua vez, implementa explicitamente o processo de interpolação por área e foi pensada para oferecer maior controle e flexibilidade. Por isso, ela é mais adequada para desenvolvimento, experimentação e possíveis extensões do método.
+
+No estágio atual do pacote, as duas funções coexistem com objetivos distintos: uma mais rápida e simplificada, outra mais completa e aberta a modificações. No futuro, é possível que essas abordagens sejam integradas em uma única função mais robusta.
+:::
+
+
+# Considerações Finais
+
+Na próxima aula vamos usar isso para testar localização de pontos.
+
+# Referências
+

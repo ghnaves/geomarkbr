@@ -5,5 +5,6 @@
 ^sandbox$
 ^\.positai$
 ^\.claude$
-^tutorials$
-^tutorials/.*$
+^site$
+^\.quarto$
+^site/\.quarto$

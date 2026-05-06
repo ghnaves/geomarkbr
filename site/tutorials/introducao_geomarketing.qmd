@@ -89,10 +89,10 @@ library(dplyr)
 setores_path <- gm_example_data_path("setores.gpkg")
 variaveis_path <- gm_example_data_path("variaveis.rds")
 
-setores <- gm_read_sectors(setores_path)
+setores <- gm_read_example_sectors()
 dados   <- gm_read_attributes(variaveis_path)
 
-base <- gm_join_data(setores, dados)
+base <- gm_join_data(dados, setores)
 ```
 
 Ao final desse bloco, o objeto `base` passa a reunir as duas partes da informação: a localização dos setores censitários e os dados associados a cada um deles. Esse será o objeto inicail a ser usado nas próximas etapas da análise.

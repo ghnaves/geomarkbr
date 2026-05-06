@@ -4,9 +4,9 @@
 #' dos setores censitários e uma tabela de atributos (por exemplo, dados do
 #' Censo). A função utiliza \code{left_join}, preservando todas as geometrias.
 #'
-#' @param setores Objeto \code{sf} com a geometria dos setores censitários.
-#' @param dados Tabela (data.frame ou tibble) contendo atributos a serem
+#'#' @param dados Tabela (data.frame ou tibble) contendo atributos a serem
 #'   associados aos setores.
+#' @param setores Objeto \code{sf} com a geometria dos setores censitários.
 #' @param id_setor_geom Nome da coluna de identificação no objeto espacial.
 #' @param id_setor_tab Nome da coluna de identificação na tabela de atributos.
 #'
@@ -26,9 +26,20 @@
 #' }
 #'
 #' @export
-gm_join_data <- function(setores, dados,
+gm_join_data <- function(dados, setores,
                          id_setor_geom = "code_tract",
                          id_setor_tab  = "code_tract") {
+
+  # remover colunas duplicadas de dados (exceto chave)
+  cols_to_drop <- intersect(
+    names(dados),
+    names(setores)
+  )
+
+  cols_to_drop <- setdiff(cols_to_drop, id_setor_tab)
+
+  if(!is.null(cols_to_drop)){
+    dados <- dplyr::select(dados, -dplyr::all_of(cols_to_drop))}
 
   dplyr::left_join(
     setores,

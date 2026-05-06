@@ -5,17 +5,14 @@
 \title{Integrar setores censitários e tabela de atributos}
 \usage{
 gm_join_data(
-  setores,
   dados,
+  setores,
   id_setor_geom = "code_tract",
   id_setor_tab = "code_tract"
 )
 }
 \arguments{
 \item{setores}{Objeto \code{sf} com a geometria dos setores censitários.}
-
-\item{dados}{Tabela (data.frame ou tibble) contendo atributos a serem
-associados aos setores.}
 
 \item{id_setor_geom}{Nome da coluna de identificação no objeto espacial.}
 
@@ -30,6 +27,9 @@ dos setores censitários e uma tabela de atributos (por exemplo, dados do
 Censo). A função utiliza \code{left_join}, preservando todas as geometrias.
 }
 \details{
+#' @param dados Tabela (data.frame ou tibble) contendo atributos a serem
+associados aos setores.
+
 A função mantém todas as geometrias do objeto \code{setores}, mesmo que não
 haja correspondência na tabela de atributos. Valores ausentes são preenchidos
 com \code{NA}.

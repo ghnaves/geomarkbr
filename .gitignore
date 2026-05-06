@@ -1,14 +1,30 @@
-.Rproj.user
+# R / RStudio
+.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
+
+# macOS
 .DS_Store
+
+# build
 *.tar.gz
+
+# pastas locais
 sandbox/
 .positai
-inst/extdata/*.html
-tutorials/*.html
-inst/doc
+site/tutorials/dados/
+*.rds
+*.gpkg
 
+# Quarto temporário
 /.quarto/
 **/*.quarto_ipynb
+
+
+# site (Quarto)
+site/.quarto/
+site/docs/
+.quarto/
+
+

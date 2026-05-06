@@ -8,7 +8,12 @@ Material da disciplina de Geomarketing.
 
 ## Conteúdo
 
-- [Introdução](tutorials/introducao_geomarketing.html)
+- [Introdução ao Geomarketing](tutorials/introducao_geomarketing.html)
+- [Preparação de Dados](tutorials/preparacao_dados.qmd)
+- [Análise de Localização](tutorials/analise_localizacao.qmd)
+
+        
+
 
 ## Sobre o pacote
 
