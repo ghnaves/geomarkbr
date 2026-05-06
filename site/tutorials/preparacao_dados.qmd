@@ -70,15 +70,16 @@ A partir dessa base, iremos **filtrar apenas o município de São João da Barra
 # dev
 setores_rj <- gm_read_sectors_data(code = 33)|>
   dplyr::mutate(code_tract = as.character(code_tract))
-df::write_sf(setores_rj,"site/tutorials/dados/setores_rj.gpkg", overwrite = TRUE)
+readr::write_sf(setores_rj,"site/tutorials/dados/shape_rj.gpkg", overwrite = TRUE)
+#dados_pf = "site/tutorials/dados/" #dev
 ```
+
 
 ```{r}
 # Base local (RJ inteiro) + filtro para São João da Barra
 
-#dados_pf = "site/tutorials/dados/" #dev
-dados_pf = here::here('tutorials/dados/') # render
 
+dados_pf = here::here('tutorials/dados/') # render
 setores <- gm_read_sectors_shape(
   path = paste0(dados_pf,"shape_rj.gpkg"),
   code = 3305000
@@ -124,11 +125,10 @@ dados_basico <- gm_read_sectors_data(
 Lembrem-se que para juntar dados com setores é pelo `gm_join_data`
 
 ```{r}
-base_basico <- gm_join_data(dados_basico, setores)
+base <- gm_join_data(dados_basico, setores)
 
-gm_plot_basic(base_basico, var = 'V0007') 
+gm_plot_basic(base, var = 'V0007') 
 ```
-
 
 ## Entendendo o dicionário do censo
 
@@ -136,7 +136,7 @@ Há infinitas bases de dados no Brasil e no munndo. Mas, elas são ilegíveis e 
 
 O comando a seguir acha esse dicionário e abre o Excel.
 
-```{r}
+```{r eval=FALSE}
 file <- gm_example_data_path("2022_dictionary_tracts.xlsx")
 utils::browseURL(file)
 ```
@@ -144,7 +144,7 @@ utils::browseURL(file)
 O arquivo Excel do dicionário é organizado em planilhas, cada uma correspondente a um dos conjuntos de dados disponíveis (`dataset`) no `censobr::read_tracts()`, além de planilhas auxiliares com informações complementares. A planilha **Siglas_Basico** apresenta o dicionário das siglas utilizadas nas variáveis V0001 a V0007 do conjunto `dataset = "Basico"`. As demais planilhas correspondem aos principais conjuntos temáticos de variáveis: **Basico**, **Pessoas**, **Domicilios**, **Obitos**, **Indigenas**, **Quilombolas**, **ResponsavelRenda** e **Entorno**. Cada uma dessas planilhas descreve as variáveis disponíveis em seu respectivo dataset, permitindo identificar seus códigos, descrições e formas de uso na análise dos dados censitários.
 
 
-## Selecionar variáveis
+## Processarmento das variáveis de interesse
 
 A partir desse ponto, começa o trabalho “real” de selecionar as variáveis que nos interessam no banco de dados. Nesse exemplo vamos filtar a renda média do chefe no setor censitário e calcular a proporção de crianças dentro do setor.
 
@@ -164,6 +164,7 @@ dados_responsavelrenda_rj <- gm_read_sectors_data(code = 33,
 readr::write_rds(dados_pessoas_rj,"site/tutorials/dados/data_pessoas_rj.rds")
 readr::write_rds(dados_responsavelrenda_rj,"site/tutorials/dados/data_responsavelrenda_rj.rds")
 
+
 ```
 
 ```{r}
@@ -178,7 +179,7 @@ dados_responsavelrenda <- gm_read_sectors_data(code = 3305000,
 ```
 
 
-### Renomear variáveis e limpar o banco
+## Renomear variáveis e limpar o banco
 
 Dois problemas surgem quando estamos trabalhando com grandes bases de dados. Sao muitas variáveis: o banco de dados depessoas tem 724 variáveis e o da renda é até menorzinho com 54 colunas. A primeira tarefa é deixar na base apenas as vaiáveis que nos interessam.
 
@@ -202,6 +203,7 @@ A ideia não é decorar todos os comandos, mas entender o fluxo. Assim, os passo
  1. `Selecionar` colunas e `Filtar` o conjunto de dados
  2. `Renomear` colunas
  3. `Calcular` indicadores
+ 4. `Unir` as bases processadas com as shapes (se pertinente)
  4. `Salvar` a base processada
  
 As três primeiras etapas podem ser encadeadas em uma sequência de pipes (`%>%`), como no codigo a seguir. Após o processamento, é uma boa prática salvar a base já organizada. Isso evita repetir todas as etapas de preparação sempre que o projeto for aberto novamente.
@@ -209,38 +211,36 @@ As três primeiras etapas podem ser encadeadas em uma sequência de pipes (`%>%`
  
 ```{r}
 dados_responsavelrenda_clean = dados_responsavelrenda %>%
-  select(code_tract, V06004, V06005) %>%
-  rename(renda_media = V06004,
-         renda_var = V06005)
-
-readr::write_rds(
-  dados_responsavelrenda_clean,
-  "dados/dados_responsavelrenda_clean.rds"
-)
+  select(code_tract, V06004, V06005) %>% # selecionar
+  rename(renda_media = V06004, 
+         renda_var = V06005) # renomear
 
 dados_pessoas_clean = dados_pessoas %>%
-  select(code_tract, demografia_V01006, demografia_V01031, demografia_V01032, demografia_V01033) %>%
+  select(code_tract, demografia_V01006, demografia_V01031, demografia_V01032, demografia_V01033) %>% # selecionar
   rename(pop = demografia_V01006,
          pop_abs_00_04 = demografia_V01031,
          pop_abs_05_09 = demografia_V01032,
-         pop_abs_10_14 = demografia_V01033) %>%
+         pop_abs_10_14 = demografia_V01033) %>% # renomear
   mutate(
     pop_criancas =
       coalesce(pop_abs_00_04, 0) +
       coalesce(pop_abs_05_09, 0) +
       coalesce(pop_abs_10_14, 0),
-  perc_criancas = pop_criancas/pop)
-base_basico <- gm_join_data(setores, dados_basico)
+  perc_criancas = pop_criancas/pop) # calcular
+
+
+dados_all = gm_join_data(dados_responsavelrenda_clean, base) #unir a base com a renda
+dados_all = gm_join_data(dados_pessoas_clean, dados_all) # unir a base_all (etapa anterior) com demografia
 
 readr::write_rds(
-  dados_pessoas_clean,
-  "dados/dados_pessoas_clean.rds"
-)
+  dados_all,
+  paste0(dados_pf,"dados_all.rds")
+) # salvar o arquivo processado
 
 ```
 
 ::: {.callout-note collapse="true"}
-## Para saber mais
+## Para saber mais sobre o pacote `dplyr`
 O pacote `dplyr` é um pacote construído para manipulação de dados e usa tipo de gramática para isso. Essa gramática prevê um conjunto de funções (*verbos*) consistentes para ajudar a resolver os principais desafios da manipulação de base de dados. A sintaxe dessa gramática é `x %>% função` onde o `x` seria o dataframe ou a shape (o *sujeito*) e a `função` é um comando do R. O símbolo `%>%` é, por convenção chamado de pipe (conector, em português) que junta um objeto com a função. Escrever o comando `x %>% comando` é o mesmo que escrever `comando(x)` (execute esse comando em x).
 
 ```{r}
@@ -263,47 +263,124 @@ Alguns dos principais comandos do `dplyr` são:
 **`coalesce()`**: Substitui valores ausentes (`NA`) por outro valor. `coalesce(pop_abs_00_04, 0)` substitui valores ausentes por zero. O comando `coalesce`  é muito útil porque operações matemáticas envolvendo valores `NA` (ou *missing*) normalmente retornam `NA`.
 ::: 
 
-## Fazendo o 
 
-## Calcular indicadores simples
+## Desenhar a grade e distribuir a população
 
-```{r eval=FALSE}
-mutate(
-  perc_mulheres = pop_mulheres / pop_abs
-)
+
+```{r eval=TRUE}
+dados_all_utm <- sf::st_transform(dados_all, 31984) # converter para UTM
+grid_utm <- gm_make_grid(dados_all_utm, type = "metric", cellsize = 500) # criar a grade
+
+grid_base = gm_interpolation_2_grid(grid_utm, dados_all_utm, 
+                        vars_extensive = c('pop'),
+                        vars_intensive= c('perc_criancas','renda_media')) # interpolação para a grade
+
+grid_base = grid_base %>%
+  mutate(dens_pop = pop / (0.5*0.5)) # calculcar a densidade populacional na grade
+
+gm_plot_basic(grid_base, var = 'perc_criancas', titulo = 'Percentual de crianças no grid')
+gm_plot_basic(grid_base, var = 'pop', titulo = 'População no grid')
+gm_plot_basic(grid_base, var = 'renda_media', titulo = 'Renda média')
+gm_plot_basic(grid_base, var = 'dens_pop', titulo = 'Densidade populacional grid')
+
 ```
 
-idade média
-idade mediana
-renda do chefe
+Você podem salvar essa base processada (`grid_base`) como o formato nativo do R (`*.rds`) ou como Geopackage (`*.gpkg` que pode ser aberto no QGIS)
+
+```{r}
+
+readr::write_rds(
+    grid_base,
+    paste0(dados_pf,"grid_base.rds")
+) # salvar o arquivo processado como rds
+
+sf::write_sf(
+    grid_base,
+    paste0(dados_pf,"grid_base.gpkg")
+) # salvar o arquivo processado como gpkg
 
 
-## Salvar uma base pronta em .rds
-
-```{r eval=FALSE}
-write_rds(...)
 ```
 
+::: {.callout-note collapse="true"}
+## 📝 Para saber mais sobre os filtros territoriais avançados
 
-## Juntar com os setores
+A menor uniddade territorial são os setores censitários que são identificados por `code_tract`. Dessa forma é possível filtrar na base um único setor ou vários. Usando o `dplyr` essa filtragem pode ser feita da seguinte forma:
 
+```{r}
+setores_aleatorios = dados_all_utm %>%
+  filter(code_tract %in% c('330500005000002','330500005000003', '330500005000004','330500005000005'))
+gm_plot_overlay(base = base,
+                base_fill = 'grey50',base_alpha = 0.5,
+                overlay = setores_aleatorios,
+                overlay_fill = 'blue', overlay_col = 'blue'
+                )
 
-::: {.callout-important}
-## 📝 Exercício
-Use `list.files(gm_example_data_path())` para listar todos os arquivos que estão na pasta de exemplos. Nas versões inciais esse pacote tinha
-
-- `2022_dictionary_tracts.xlsx`: dicionário do arquivo de atributos originais do IBGE. Util para conhecer quais dados existem. Abra o arquivo com:
-```{r eval=FALSE}
-file <- gm_example_data_path("2022_dictionary_tracts.xlsx")
-utils::browseURL(file)
 ```
-- `ciclovias.gpkg`: Geopackage com as ciclovias de Campos disponíveis no osmdata (em 29/04/2026)
-- `setores.gpkg`: Setores Censitários das sede de Campos
-- `vias_todas.gpkg`: Todas as vidas da sede de Campos
-- `variaveis.csv`: Dados dos setores censitários no formato csv
-- `variaveis.rds`: Dados dos setores censitários no formato nativo do R
+
+Há outros unidades territoriais intraurbanas nas bases do IBGE que são construídas com agregação de setores censitários:
+
+ - `zone` e `code_situacao`: Urbano / Rural
+ - `code_neighborhood` e `name_neighborhood`: Bairros
+ - `code_district` e `name_district`: Distritos
+ - `code_subdistrict` e `name_subdistrict`: Subdistritos
+ - `code_nucleo_urbano` e `name_nucleo_urbano`:  Núcleos urbanos
+ - `code_favela` e `name_favela`: Favelas
+ - `code_aglomerado` e `name_aglomerado`: Aglomerados
+
+Há ainda unidades territoriais que se baseiam nos municípios (`code_muni` e `name_muni`) e estados.
+ - `code_state`, `name_state` e `abbrev_state`: Estados
+ - `code_intermediate` e `name_intermediate`: Região intermediária
+ - `code_immediate` e `name_immediate`: Região imediata
+
+Todos esses códigos podem ser usados nos comandos de importação de shapes:
+
+```{r}
+sh = gm_read_sectors_shape(
+    path = paste0(dados_pf,"shape_rj.gpkg"),
+    filter_var = 'zone',
+    code = 'Urbana',
+    state = 'RJ')
+
+tm_shape(shp = sh)+
+ tm_polygons(fill = 'lightpink', 
+             col = NULL)
+
+sh_campos = gm_read_sectors_shape(
+    path = paste0(dados_pf,"shape_rj.gpkg"), # sem esse argumento, busca na internet
+    filter_var = 'code_muni',
+    code = 3301009,
+    state = 'RJ')
+
+unique(sh_campos$code_subdistrict)[1:3] #1º ao 3º subdistrito que estão na lista
+
+sh_1st_subd_campos = gm_read_sectors_shape(
+    path = paste0(dados_pf,"shape_rj.gpkg"),
+    filter_var = 'code_subdistrict',
+    code = 33010090506,
+    state = 'RJ')
+
+unique(sh_campos$name_neighborhood)[2:4] #2º e 3º bairros que estão nalista
+
+sh_sao_caetano = gm_read_sectors_shape(
+    path = paste0(dados_pf,"shape_rj.gpkg"),
+    filter_var = 'name_neighborhood',
+    code = "Parque São Caetano",
+    state = 'RJ')
+
+tm_shape(sh_sao_caetano)+
+ tm_polygons(fill = 'lightpink', 
+             col = 'black')
+
+tmap::tmap_mode("view")
+gm_plot_overlay(base = sh_1st_subd_campos,
+                overlay = sh_sao_caetano)
+tmap::tmap_mode("plot")
+
+```
 
 :::
+
 
 
 # OpenStreetMapa
@@ -321,74 +398,45 @@ Mostrar exatamente o descobri
 ## Entendendo as tags de pontos de interesse
 
 
-::: {.callout-tip}
-## 💡 Dica
-Use `list.files(gm_example_data_path())` para listar todos os arquivos que estão na pasta de exemplos. Nas versões inciais esse pacote tinha
+::: {.callout-note collapse="true"}
+## Para saber mais sobre como fazer um mapa com  mais e perfumarias
 
-- `2022_dictionary_tracts.xlsx`: dicionário do arquivo de atributos originais do IBGE. Util para conhecer quais dados existem. Abra o arquivo com:
-```{r eval=FALSE}
-file <- gm_example_data_path("2022_dictionary_tracts.xlsx")
-utils::browseURL(file)
-```
-- `ciclovias.gpkg`: Geopackage com as ciclovias de Campos disponíveis no osmdata (em 29/04/2026)
-- `setores.gpkg`: Setores Censitários das sede de Campos
-- `vias_todas.gpkg`: Todas as vidas da sede de Campos
-- `variaveis.csv`: Dados dos setores censitários no formato csv
-- `variaveis.rds`: Dados dos setores censitários no formato nativo do R
+Até aqui usamos mapas bastante simples, suficientes para visualizar rapidamente uma variável no espaço. No entanto, um mapa também é uma forma de comunicação. Por isso, além de representar os dados, é importante cuidar de alguns elementos cartográficos: escolha da paleta de cores, título, legenda, grade, escala, orientação e fonte dos dados.
 
-:::
-
-# Primeiro Mapa
+Nesta seção, vamos apenas mostrar algumas possibilidades. A ideia não é transformar esta aula em uma aula completa de cartografia temática, mas dar um “gostinho” do potencial do `tmap`. O pacote permite construir mapas em camadas, combinando formas geométricas, preenchimentos, legendas e elementos gráficos adicionais. Para aprofundar, vale consultar o livro *Spatial Data Visualization with tmap* [@nowosad2025], que é um guia prático para criação de mapas claros e efetivos em R, e o capítulo sobre mapas avançados do *Geocomputation with R* [@lovelace2019], que apresenta mapas estáticos, interativos, animações e aplicações web.  
 
 
-::: {.callout-warning}
-## ⚠️ Atenção
-Esse tutorial usa a opção estática `plot` para agilizar o processamento e a renderização deste material. Apenas mapas estáticos serão exibidos a partir dese ponto neste documento. Se quiser mapas interativos deixe o modo `view` ligado.
 ```{r}
-tmap::tmap_mode("plot") #será sempre plot  no texto desse tutorial
+tm_shape(World)+
+    tm_polygons(fill = "HPI")
 ```
-:::
 
+```{r}
+tm_shape(World, crs = "+proj=moll") +
+   tm_graticules() +
+   tm_compass(type = "8star", position = c("left", "top")) +
+    tm_polygons(fill = "HPI",
+                fill.scale = tm_scale_continuous(values = "matplotlib.rd_yl_bu"),
+                fill.legend = tm_legend(title = "Happy Planet Index",
+                                        orientation = "landscape", 
+                                        frame = FALSE)
+                )
+```
 
-## Algumas perfumarias: adicionando camadas com vias e ciclovias (OSM)
-
-
-
-::: {.callout-note}
-## Observação
-Embora o OpenStreetMap permita representar ciclovias e ciclofaixas por diferentes combinações de tags, a qualidade dessa informação depende do mapeamento local. No de Campos, observamos que parte da infraestrutura cicloviária não está registrada de forma consistente. Algumas ciclovias segregadas aparecem associadas às tags `cycleway:left` ou `cycleway:right`, enquanto não foram encontradas vias classificadas diretamente como `highway = cycleway`. Além disso, algumas ciclofaixas existentes não aparecem na base. Por esse motivo, nesta aula optamos por não utilizar essa diferenciação de ciiclovia/ciclofaixas como variável analítica.
-
-Mas, esse é um exemplo útil para mostrar que dados colaborativos, como os do OpenStreetMap, exigem inspeção crítica antes do uso. Não existem mapas e dados perfeitos e sempre temos de trabalhar com o que temos. A ausência de uma feição na base não significa necessariamente ausência do fenômeno no território. Essa realidade é especialmente importante quando exploramos lugares que não conhecemos intimamente.
-:::
-
-
-# Grade regular
-
-
-
-## Sobre a sistema de projeções
-
-
-
-::: {.callout-note}
-## 🔭 Observação
-O OpenSreetMap usa como coordenadas padrão o WGS84, em lat/long (EPGS:4326). Os exemplos desse tutorial já estão com as vias e ciclovias converitdas para SIRGAS 2000 / UTM zone 24S (EPGS:31984)
-:::
-
-## Interpolação dos dados da base
-
-
-
-::: {.callout-tip}
-## 💡 Dica
-
-Há uma função chamada `gm_interpolation_2_grid_fast` no pacote, muito similar à `gm_interpolation_2_grid`. Ela foi construída para ser executada mais rapidamente, sendo especialmente útil em atividades de sala de aula ou em situações com limitações de processamento.
-
-A função `gm_interpolation_2_grid`, por sua vez, implementa explicitamente o processo de interpolação por área e foi pensada para oferecer maior controle e flexibilidade. Por isso, ela é mais adequada para desenvolvimento, experimentação e possíveis extensões do método.
-
-No estágio atual do pacote, as duas funções coexistem com objetivos distintos: uma mais rápida e simplificada, outra mais completa e aberta a modificações. No futuro, é possível que essas abordagens sejam integradas em uma única função mais robusta.
-:::
-
+```{r}
+tm_shape(grid_base)+
+  tm_polygons(fill = "dens_pop", col = NULL,
+              fill.scale = tm_scale_continuous(values = "brewer.yl_or_br"),
+              fill.legend = tm_legend(title = "hab/km2",
+                                      frame = FALSE))+
+  tm_grid() +
+  tm_compass(type = "8star", position = c("left", "top")) +
+  tm_credits("Fonte: Aula de Geomarketing")+
+  tm_title(text = "Densidade Populacional em São João da Barra",
+           fontface = "italic",
+           fontfamily = "serif")
+```
+::: 
 
 # Considerações Finais
 
