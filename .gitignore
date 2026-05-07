@@ -27,4 +27,7 @@ site/.quarto/
 site/docs/
 .quarto/
 
+#Arquivos temporários
+~*.*
+
 

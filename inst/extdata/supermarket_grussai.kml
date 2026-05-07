@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document id="document">
+	<name>supermarket_grussai</name>
+	<gx:CascadingStyle kml:id="__managed_style_075A6D48333F37867354_highlight">
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=fbc02d&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>3</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_075A6D48333F37867354_normal">
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=fbc02d&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>2</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_075A6D48333F37867354">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_075A6D48333F37867354_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_075A6D48333F37867354_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Placemark id="0B2C7BE90C3F354D67E0">
+		<name>Super Bom Grussaí</name>
+		<description><![CDATA[<div>Super Bom Grussaí<br></div>]]></description>
+		<LookAt>
+			<longitude>-41.04074869999999</longitude>
+			<latitude>-21.7060337</latitude>
+			<altitude>0</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>973.2824393227728</range>
+			<altitudeMode>relativeToGround</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_075A6D48333F37867354</styleUrl>
+		<Point>
+			<altitudeMode>relativeToGround</altitudeMode>
+			<coordinates>-41.04074869999999,-21.7060337,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="063FC387D63F354DA227">
+		<name>Supermercado Reluz Grussai</name>
+		<description><![CDATA[<div>Supermercado Reluz Grussai<br></div>]]></description>
+		<LookAt>
+			<longitude>-41.03837559999999</longitude>
+			<latitude>-21.7043477</latitude>
+			<altitude>0</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>973.2951203595213</range>
+			<altitudeMode>relativeToGround</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_075A6D48333F37867354</styleUrl>
+		<Point>
+			<altitudeMode>relativeToGround</altitudeMode>
+			<coordinates>-41.03837559999999,-21.7043477,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="018A1BF3983F354DC3D4">
+		<name>Mercado do joca</name>
+		<description><![CDATA[<div>Mercado do joca<br></div>]]></description>
+		<LookAt>
+			<longitude>-41.0378785</longitude>
+			<latitude>-21.7027629</latitude>
+			<altitude>0</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>973.3070394058219</range>
+			<altitudeMode>relativeToGround</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_075A6D48333F37867354</styleUrl>
+		<Point>
+			<altitudeMode>relativeToGround</altitudeMode>
+			<coordinates>-41.0378785,-21.7027629,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="00780C35DD3F354DF8EF">
+		<name>Barreto E Rangel Irmãos</name>
+		<description><![CDATA[<div>Barreto E Rangel Irmãos<br></div>]]></description>
+		<LookAt>
+			<longitude>-41.0303628</longitude>
+			<latitude>-21.6995106</latitude>
+			<altitude>0</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>973.3314969617649</range>
+			<altitudeMode>relativeToGround</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_075A6D48333F37867354</styleUrl>
+		<Point>
+			<altitudeMode>relativeToGround</altitudeMode>
+			<coordinates>-41.0303628,-21.6995106,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0D586D0E4F3F354E1A73">
+		<name>SUPERMERCADO CARDOSO</name>
+		<description><![CDATA[<div>SUPERMERCADO CARDOSO<br></div>]]></description>
+		<LookAt>
+			<longitude>-41.032975</longitude>
+			<latitude>-21.6980061</latitude>
+			<altitude>0</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>973.342809779636</range>
+			<altitudeMode>relativeToGround</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_075A6D48333F37867354</styleUrl>
+		<Point>
+			<altitudeMode>relativeToGround</altitudeMode>
+			<coordinates>-41.0329811,-21.6980058,0</coordinates>
+		</Point>
+	</Placemark>
+</Document>
+</kml>

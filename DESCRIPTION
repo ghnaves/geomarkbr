@@ -31,6 +31,8 @@ Imports:
     stringr,
     rlang
 Suggests:
+    gt,
+    janitor,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
