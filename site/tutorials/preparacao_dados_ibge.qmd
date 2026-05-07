@@ -47,11 +47,36 @@ library(geomarkbr)
 tmap::tmap_mode("plot")
 ```
 
-# Introdução
+# Censo Demográfico
+
+::: {.callout-note collapse="true"}
+## 😳 Código de desenvolvimento (dev)
+
+```{r, echo = TRUE, eval = FALSE}
+# dev shape
+setores_rj <- gm_read_sectors_data(code = 33)|>
+  dplyr::mutate(code_tract = as.character(code_tract))
+#dados_pf = "site/tutorials/dados/" #dev
+readr::write_sf(setores_rj,paste0(dados_pf,"shape_rj.gpkg") overwrite = TRUE)
+
+```
+
+```{r, echo = TRUE, eval = FALSE}
+# dev data
+dados_basico_rj <- gm_read_sectors_data(code = 33)
+dados_pessoas_rj <- gm_read_sectors_data(code = 33,
+                                dataset = "Pessoas")
+dados_responsavelrenda_rj <- gm_read_sectors_data(code = 33,
+                                dataset = "ResponsavelRenda")
+
+readr::write_rds(dados_basico_rj,"site/tutorials/dados/data_basico_rj.rds")
+readr::write_rds(dados_pessoas_rj,"site/tutorials/dados/data_pessoas_rj.rds")
+readr::write_rds(dados_responsavelrenda_rj,"site/tutorials/dados/data_responsavelrenda_rj.rds")
+```
+:::
 
 O objetivo dessa aula é preparar os dados que serão usados na análise de localização. Não vamos aprender como desenhar mapas: a aula de hoje é sobre construir a base que torna o mapa possível. Para isso ela se distribui em duas seções. A primeira dela é dedicada a importação de dados dos Agregados por Setor Censitário do Censo Demográfico de 2022 do Brasil. Ele usa o pacote `geomarkbr` [@givisiez2026] e dois outros pacotes densenvolvidos pelo IPEA que são e o `censobr` [@pereira2023a] e o `geobr` [@goncalves2009a]
 
-# Censo Demográfico
 
 ## Baixar dados do Censo
 
@@ -66,18 +91,9 @@ Entretanto, o download direto dos setores censitários via internet pode apresen
 
 A partir dessa base, iremos **filtrar apenas o município de São João da Barra (código 3305000)**, trabalhando com um conjunto de dados menor e mais adequado para as atividades em sala.
 
-```{r, echo = FALSE, eval = FALSE}
-# dev
-setores_rj <- gm_read_sectors_data(code = 33)|>
-  dplyr::mutate(code_tract = as.character(code_tract))
-readr::write_sf(setores_rj,"site/tutorials/dados/shape_rj.gpkg", overwrite = TRUE)
-#dados_pf = "site/tutorials/dados/" #dev
-```
-
 
 ```{r}
 # Base local (RJ inteiro) + filtro para São João da Barra
-
 
 dados_pf = here::here('tutorials/dados/') # render
 setores <- gm_read_sectors_shape(
@@ -108,11 +124,6 @@ gm_read_sectors_data(code = 3305133) # São José de Ubá (RJ)
 
 Mas, como antes, nem sempre os dados estão disponíveis e por isso vamos usar a base com dados locais para o Rio de Janeiro. Selecionamos apenas o município de São João da Barra
 
-```{r, echo = FALSE, eval = FALSE}
-# dev
-dados_basico_rj <- gm_read_sectors_data(code = 33)
-readr::write_rds(dados_basico_rj,"site/tutorials/dados/data_basico_rj.rds")
-```
 
 ```{r}
 # Base local (RJ inteiro) + filtro para São João da Barra
@@ -152,20 +163,6 @@ A partir desse ponto, começa o trabalho “real” de selecionar as variáveis 
 ## 💡 Dica
 Lembrem-se que podemos filtrar desde já quais *territórios* vamos trabalhar. No exemplo abaixo filtramos os dados sobre a renda do chefe e dados demográficos para o município de São João da Barra.
 :::
-
-```{r, echo = FALSE, eval = FALSE}
-# dev
-dados_pessoas_rj <- gm_read_sectors_data(code = 33,
-                                dataset = "Pessoas")
-
-dados_responsavelrenda_rj <- gm_read_sectors_data(code = 33,
-                                dataset = "ResponsavelRenda")
-
-readr::write_rds(dados_pessoas_rj,"site/tutorials/dados/data_pessoas_rj.rds")
-readr::write_rds(dados_responsavelrenda_rj,"site/tutorials/dados/data_responsavelrenda_rj.rds")
-
-
-```
 
 ```{r}
 dados_pessoas <- gm_read_sectors_data(code = 3305000,
@@ -240,7 +237,7 @@ readr::write_rds(
 ```
 
 ::: {.callout-note collapse="true"}
-## Para saber mais sobre o pacote `dplyr`
+## 🤓 Para saber mais sobre o pacote `dplyr`
 O pacote `dplyr` é um pacote construído para manipulação de dados e usa tipo de gramática para isso. Essa gramática prevê um conjunto de funções (*verbos*) consistentes para ajudar a resolver os principais desafios da manipulação de base de dados. A sintaxe dessa gramática é `x %>% função` onde o `x` seria o dataframe ou a shape (o *sujeito*) e a `função` é um comando do R. O símbolo `%>%` é, por convenção chamado de pipe (conector, em português) que junta um objeto com a função. Escrever o comando `x %>% comando` é o mesmo que escrever `comando(x)` (execute esse comando em x).
 
 ```{r}
@@ -302,8 +299,59 @@ sf::write_sf(
 
 ```
 
+::: {.callout-important}
+## 📝 Exercício
+
+O objetivo deste exercício é aplicar o fluxo de preparação de dados desenvolvido nesta aula utilizando outras variáveis dos Agregados por Setor Censitário do Censo Demográfico de 2022.
+
+Escolha um município do estado do Rio de Janeiro (`code_muni` de Campos é `3301009`) e produza uma base processada contendo:
+
+1. A proporção de homens entre 20 e 39 anos;
+2. A proporção de alfabetizados no setor censitário.
+
+Para isso, vocês deverão:
+
+1. Consultar o dicionário do Censo e identificar quais variáveis representam:
+   - população masculina nas faixas etárias desejadas;
+   - população alfabetizada;
+   - população total (denominador do indicador).
+
+2. Baixar ou filtrar os dados do município escolhido;
+
+3. Selecionar apenas as variáveis necessárias;
+
+4. Renomear as colunas para nomes mais compreensíveis;
+
+5. Calcular:
+   - o total de homens entre 20 e 39 anos;
+   - a proporção de alfabetizados no setor;
+
+6. Unir os dados às shapes dos setores censitários;
+
+7. Produzir pelo menos dois mapas temáticos:
+   - um para população masculina de 20 a 39 anos;
+   - outro para proporção de alfabetizados.
+
+### 🧐 Sugestões
+
+- Municípios menores tendem a processar mais rapidamente;
+- Usem nomes curtos e claros para as variáveis;
+- Salvem a base processada em formato `.rds`;
+- Tentem interpretar espacialmente os padrões encontrados.
+
+### 🤓 Desafio adicional (opcional)
+
+Experimentem:
+- alterar a paleta de cores;
+- inserir título e legenda personalizados;
+- criar uma grade regular e interpolar os indicadores para ela.
+
+:::
+
+
 ::: {.callout-note collapse="true"}
-## 📝 Para saber mais sobre os filtros territoriais avançados
+
+## 🌎 **Para saber mais** sobre os filtros territoriais avançados
 
 A menor uniddade territorial são os setores censitários que são identificados por `code_tract`. Dessa forma é possível filtrar na base um único setor ou vários. Usando o `dplyr` essa filtragem pode ser feita da seguinte forma:
 
@@ -378,28 +426,10 @@ gm_plot_overlay(base = sh_1st_subd_campos,
 tmap::tmap_mode("plot")
 
 ```
-
 :::
 
-
-
-# OpenStreetMapa
-
-isso pode não caber
-
-## Entendendo as tags de vias
-
-Mostrar exatamente o descobri
-
-* highway = residential
-* cycleway:left = lane
-* inconsistência dos dados
-
-## Entendendo as tags de pontos de interesse
-
-
 ::: {.callout-note collapse="true"}
-## Para saber mais sobre como fazer um mapa com  mais e perfumarias
+## 🌎 **Para saber mais** sobre como fazer um mapa com  mais e perfumarias
 
 Até aqui usamos mapas bastante simples, suficientes para visualizar rapidamente uma variável no espaço. No entanto, um mapa também é uma forma de comunicação. Por isso, além de representar os dados, é importante cuidar de alguns elementos cartográficos: escolha da paleta de cores, título, legenda, grade, escala, orientação e fonte dos dados.
 
@@ -437,10 +467,6 @@ tm_shape(grid_base)+
            fontfamily = "serif")
 ```
 ::: 
-
-# Considerações Finais
-
-Na próxima aula vamos usar isso para testar localização de pontos.
 
 # Referências
 
