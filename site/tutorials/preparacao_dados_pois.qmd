@@ -50,7 +50,7 @@ tmap::tmap_mode("plot")
 # Pontos de Interesse: OpenStreetMap e Google Maps
 
 ::: {.callout-note collapse="true"}
-## 😳 Código de desenvolvimento (dev)
+## 🤓 Código de desenvolvimento (dev)
 
 ```{r, echo = TRUE, eval = FALSE}
 # dev: ler os setores censitários e salvar como rds
@@ -548,11 +548,15 @@ Nos próximos exemplos vamos retomar os setores censitários e realizar alguns d
 ::: {.callout-important}
 ## 📝 Exercício rápido
 
+
+
 - Escolher um tipo de ponto de interesse
 - Baixar dados do OSM
 - Selecionar e limpar variáveis
 - Contar quantos pontos existem por setor ou por grade
 - Fazer um mapa simples
+
+**Sugestão:** há um arquivo chamado `osm_pois_1stsubdistrict_campos.rds` na pasta de ados que tem os pontos de interesse do primeiro subdistrito de campos. Sã0 841 pontos. Comecem por ele caso os dados não baixem da internet.
 
 :::
 

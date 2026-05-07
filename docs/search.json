@@ -151,7 +151,7 @@
     "href": "tutorials/preparacao_dados_pois.html#salvar",
     "title": "Preparação de dados",
     "section": "1.7 Salvar",
-    "text": "1.7 Salvar\n\nSalvar a base tratada em .rds\nSalvar camada espacial em .gpkg\n\n\n\n\n\n\n\nImportante📝 Exercício rápido\n\n\n\n\nEscolher um tipo de ponto de interesse\nBaixar dados do OSM\nSelecionar e limpar variáveis\nContar quantos pontos existem por setor ou por grade\nFazer um mapa simples"
+    "text": "1.7 Salvar\n\nSalvar a base tratada em .rds\nSalvar camada espacial em .gpkg\n\n\n\n\n\n\n\nImportante📝 Exercício rápido\n\n\n\n\nEscolher um tipo de ponto de interesse\nBaixar dados do OSM\nSelecionar e limpar variáveis\nContar quantos pontos existem por setor ou por grade\nFazer um mapa simples\n\nSugestão: há um arquivo chamado osm_pois_1stsubdistrict_campos.rds na pasta de ados que tem os pontos de interesse do primeiro subdistrito de campos. Sã0 841 pontos. Comecem por ele caso os dados não baixem da internet."
   },
   {
     "objectID": "tutorials/preparacao_dados_pois.html#limitações-dos-dados-do-openstreetmap",
