@@ -67,78 +67,120 @@ readr::write_sf(setores_rj,
 
 ```{r echo = TRUE, eval = FALSE}
 limites_sjb = geobr::read_municipality(2022, code_muni = 3305000)
+limites_campos = geobr::read_municipality(2022, code_muni = 3301009)
+setores_campos = geobr::read_census_tract(code_tract = 3301009, year = 2022)
+setores_1stsubdistrict_campos = setores_campos %>%
+  dplyr::filter(code_subdistrict == 33010090506)
+
+
+sf::write_sf(setores_1stsubdistrict_campos,
+                paste0(dados_pf,"setores_1stsubdistrict_campos.gpkg"), 
+                overwrite = TRUE)
+sf::write_sf(setores_campos,
+                paste0(dados_pf,"setores_campos.gpkg"), 
+                overwrite = TRUE)
+sf::write_sf(limites_campos,
+                paste0(dados_pf,"limites_campos.gpkg"), 
+                overwrite = TRUE)
 sf::write_sf(limites_sjb,
                 paste0(dados_pf,"limites_sjb.gpkg"), 
                 overwrite = TRUE)
 
-bbox <- sf::st_bbox(limites_sjb)
+bbox_sjb <- sf::st_bbox(limites_sjb)
+bbox_campos <- sf::st_bbox(limites_campos)
+bbox_1stsubdistrict_campos <- sf::st_bbox(setores_1stsubdistrict_campos)
 ```
 
 
 ```{r eval = FALSE, echo = TRUE}
 # dev: baixar pontos de interesse do OSM
 
-endpoints <- c(
-  "https://overpass-api.de/api/interpreter",
-  "https://overpass.kumi.systems/api/interpreter",
-  "https://api.openstreetmap.fr/oapi/interpreter",
-  "https://overpass.osm.vi-di.fr/api/interpreter"
-)
 
-osm_pois <- NULL
-
-for (ep in endpoints) {
-  message("Tentando endpoint: ", ep)
-
-  ok <- tryCatch(
-    {
-      osmdata::set_overpass_url(ep)
-      TRUE
-    },
-    error = function(e) {
-      message("Falhou ao definir endpoint: ", conditionMessage(e))
-      FALSE
-    }
+baixa_pois = function(bbox){
+  endpoints <- c(
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://api.openstreetmap.fr/oapi/interpreter",
+    "https://overpass.osm.vi-di.fr/api/interpreter"
   )
-
-  if (!ok) next
-
-  osm_pois <- tryCatch(
-    {
-      osmdata::opq(
-        bbox = bbox,
-        timeout = 300
-      ) |>
-        osmdata::add_osm_feature(key = "amenity") |>
-        osmdata::osmdata_sf()
-    },
-    error = function(e) {
-      message("Falhou na consulta: ", conditionMessage(e))
-      NULL
-    }
-  )
-
-  if (!is.null(osm_pois)) break
+  
+  osm_pois <- NULL
+  
+  for (ep in endpoints) {
+    message("Tentando endpoint: ", ep)
+    
+    ok <- tryCatch(
+      {
+        osmdata::set_overpass_url(ep)
+        TRUE
+      },
+      error = function(e) {
+        message("Falhou ao definir endpoint: ", conditionMessage(e))
+        FALSE
+      }
+    )
+    
+    if (!ok) next
+    
+    osm_pois <- tryCatch(
+      {
+        osmdata::opq(
+          bbox = bbox,
+          timeout = 300
+        ) |>
+          osmdata::add_osm_feature(key = "amenity") |>
+          osmdata::osmdata_sf()
+      },
+      error = function(e) {
+        message("Falhou na consulta: ", conditionMessage(e))
+        NULL
+      }
+    )
+    
+    if (!is.null(osm_pois)) break
+  }
+  return(list(osm_pois=osm_pois,
+              pois_points = osm_pois$osm_points,
+              pois_polygons = osm_pois$osm_polygons))
 }
 
+osm_pois_1stsubdistrict_campos = baixa_pois(bbox_1stsubdistrict_campos)
 readr::write_rds(
-  osm_pois, "site/tutorials/dados/osm_pois.rds")
-
-pois_points <- osm_pois$osm_points
-pois_polygons <- osm_pois$osm_polygons
-
+  osm_pois_1stsubdistrict_campos$osm_pois, "site/tutorials/dados/osm_pois_1stsubdistrict_campos.rds")
 sf::write_sf(
-  pois_points,
-  "inst/extdata/osm_pois_sjb_points.gpkg",
-  delete_dsn = TRUE
-)
-
+  osm_pois_1stsubdistrict_campos$pois_points,
+  "inst/extdata/osm_pois_1stsubdistrict_campos_points.gpkg",
+  delete_dsn = TRUE)
 sf::write_sf(
-  pois_polygons,
+  osm_pois_1stsubdistrict_campos$pois_polygons,
+  "inst/extdata/osm_pois_1stsubdistrict_campos_polygons.gpkg",
+  delete_dsn = TRUE)
+
+osm_pois_campos = baixa_pois(bbox_campos)
+readr::write_rds(
+  osm_pois_campos$osm_pois, "site/tutorials/dados/osm_pois_campos.rds")
+sf::write_sf(
+  osm_pois_campos$pois_points,
+  "inst/extdata/osm_pois_campos_points.gpkg",
+  delete_dsn = TRUE)
+sf::write_sf(
+  osm_pois_campos$pois_polygons,
+  "inst/extdata/osm_pois_campos_polygons.gpkg",
+  delete_dsn = TRUE)
+
+
+osm_pois_sjb = baixa_pois(bbox_sjb)
+readr::write_rds(
+  osm_pois_sjb$osm_pois, "site/tutorials/dados/osm_pois_sjb.rds")
+sf::write_sf(
+  osm_pois_sjb$pois_polygons,
   "inst/extdata/osm_pois_sjb_polygons.gpkg",
-  delete_dsn = TRUE
+  delete_dsn = TRUE)
+sf::write_sf(
+  osm_pois_sjb$pois_points,
+  "inst/extdata/osm_pois_sjb_points.gpkg",
+  delete_dsn = TRUE)
 
-)
 
 ```
 
