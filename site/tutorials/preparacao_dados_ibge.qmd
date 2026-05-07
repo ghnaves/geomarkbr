@@ -50,7 +50,7 @@ tmap::tmap_mode("plot")
 # Censo Demográfico
 
 ::: {.callout-note collapse="true"}
-## 😳 Código de desenvolvimento (dev)
+## 🤓 Código de desenvolvimento (dev)
 
 ```{r, echo = TRUE, eval = FALSE}
 # dev shape
@@ -95,7 +95,8 @@ A partir dessa base, iremos **filtrar apenas o município de São João da Barra
 ```{r}
 # Base local (RJ inteiro) + filtro para São João da Barra
 
-dados_pf = here::here('tutorials/dados/') # render
+dados_pf = here::here('tutorials/dados/') # substitua pelo caminho da aula_geomarketing
+                                          # Acho que '~/aula_geomarketing/data' funciona
 setores <- gm_read_sectors_shape(
   path = paste0(dados_pf,"shape_rj.gpkg"),
   code = 3305000

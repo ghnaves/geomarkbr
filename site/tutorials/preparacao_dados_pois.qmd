@@ -204,7 +204,8 @@ O pacote `osmdata` trabalha frequentemente com uma **bounding box**, isto é, um
 
 ```{r}
 
-dados_pf = here::here('tutorials/dados/') # render
+dados_pf = here::here('tutorials/dados/') # substitua pelo caminho da aula_geomarketing
+                                          # Acho que '~/aula_geomarketing/data' funciona
 setores <- gm_read_sectors_shape(
   path = paste0(dados_pf,"limites_sjb.gpkg"),
   code = 3305000
