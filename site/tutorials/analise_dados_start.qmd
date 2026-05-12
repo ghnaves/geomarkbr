@@ -222,7 +222,7 @@ nos próximos tutoriais vamos retomar os setores censitários e os dados do Cens
 
 O primeiro passo em muitas análises espaciais é delimitar a área que desejamos estudar. Essa área pode representar um bairro, uma região comercial, um entorno escolar, uma área de influência ou qualquer outro recorte espacial relevante para a análise. Nosso exercício nesta seção será contar quantos equipamentos de alimentação tem na região de Grussaí. A ideia é usar algumas abordagens. A primeira dela é usar algum limite já mapeado pelo IBGE para delimitar a área.
 
-```{r}
+```{r eval=FALSE}
 
 setores_sjb_wgs84ll %>%
   janitor::tabyl(name_district) %>%
@@ -238,7 +238,7 @@ setores_grussai_wgs84ll = setores_sjb_wgs84ll %>%
 
 O segundo passo é fazer a intercessão e contar quantos pontos tem na área que escolhemos. mas, lembrem-se que nem sempre o CRS é o mesmo.
 
-```{r}
+```{r eval=FALSE}
 # filtrar apenas equipamentos de alimentação
 pois_alimentacao <- osm_pois_points_categorizados %>%
   filter(categoria == "Alimentação")
@@ -253,7 +253,7 @@ pois_grussai <- sf::st_filter(
 nrow(pois_grussai)
 ```
 
-```{r}
+```{r eval=FALSE}
 base_grussai_tm = tm_shape(setores_grussai_wgs84ll)+
   tm_polygons(fill = 'grey80', col = 'grey80')
 
