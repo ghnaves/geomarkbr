@@ -1,0 +1,326 @@
+---
+title: "Preparação de dados"
+subtitle: "Aplicações com o pacote geomarkbr"
+author: "Gustavo Givisiez"
+date: today
+lang: pt-BR
+
+project:
+  type: website
+  output-dir: docs
+  
+format:
+  html:
+    embed-resources: true
+    self_contained: true
+    theme: journal
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    number-sections: true
+    code-fold: show
+    code-tools: true
+    highlight-style: tango
+
+execute:
+  eval: true
+  echo: true
+  warning: false
+  message: false
+
+bibliography: references.bib
+csl: planeta-zotero-abnt.csl
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, eval = TRUE}
+library(dplyr)
+library(sf)
+library(tmap)
+library(geomarkbr)
+tmap::tmap_mode("plot")
+```
+
+# Pontos de Interesse: OpenStreetMap e Google Maps
+
+::: {.callout-note collapse="true"}
+## 🤓 Código de desenvolvimento (dev)
+
+```{r, echo = TRUE, eval = FALSE}
+# dev: ler os setores censitários e salvar como rds
+setores_rj <- gm_read_sectors_data(code = 33)|>
+  dplyr::mutate(code_tract = as.character(code_tract))
+
+dados_pf = "site/tutorials/dados/"
+
+readr::write_sf(setores_rj,
+                paste0(dadps_pf,"shape_rj.gpkg"), 
+                overwrite = TRUE)
+
+```
+
+```{r echo = TRUE, eval = FALSE}
+limites_sjb = geobr::read_municipality(2022, code_muni = 3305000)
+setores_sjb = geobr::read_census_tract(code_tract = 3305000, year = 2022)
+sf::write_sf(limites_sjb,
+                paste0(dados_pf,"limites_sjb.gpkg"), 
+                overwrite = TRUE)
+sf::write_sf(setores_sjb,
+                paste0(dados_pf,"setores_sjb.gpkg"), 
+                overwrite = TRUE)
+
+limites_campos = geobr::read_municipality(2022, code_muni = 3301009)
+setores_campos = geobr::read_census_tract(code_tract = 3301009, year = 2022)
+setores_1stsubdistrict_campos = setores_campos %>%
+  dplyr::filter(code_subdistrict == 33010090506)
+
+
+sf::write_sf(setores_1stsubdistrict_campos,
+                paste0(dados_pf,"setores_1stsubdistrict_campos.gpkg"), 
+                overwrite = TRUE)
+sf::write_sf(setores_campos,
+                paste0(dados_pf,"setores_campos.gpkg"), 
+                overwrite = TRUE)
+sf::write_sf(limites_campos,
+                paste0(dados_pf,"limites_campos.gpkg"), 
+                overwrite = TRUE)
+
+
+bbox_sjb <- sf::st_bbox(limites_sjb)
+bbox_campos <- sf::st_bbox(limites_campos)
+bbox_1stsubdistrict_campos <- sf::st_bbox(setores_1stsubdistrict_campos)
+```
+
+
+```{r eval = FALSE, echo = TRUE}
+# dev: baixar pontos de interesse do OSM
+
+
+baixa_pois = function(bbox){
+  endpoints <- c(
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://api.openstreetmap.fr/oapi/interpreter",
+    "https://overpass.osm.vi-di.fr/api/interpreter"
+  )
+  
+  osm_pois <- NULL
+  
+  for (ep in endpoints) {
+    message("Tentando endpoint: ", ep)
+    
+    ok <- tryCatch(
+      {
+        osmdata::set_overpass_url(ep)
+        TRUE
+      },
+      error = function(e) {
+        message("Falhou ao definir endpoint: ", conditionMessage(e))
+        FALSE
+      }
+    )
+    
+    if (!ok) next
+    
+    osm_pois <- tryCatch(
+      {
+        osmdata::opq(
+          bbox = bbox,
+          timeout = 300
+        ) |>
+          osmdata::add_osm_feature(key = "amenity") |>
+          osmdata::osmdata_sf()
+      },
+      error = function(e) {
+        message("Falhou na consulta: ", conditionMessage(e))
+        NULL
+      }
+    )
+    
+    if (!is.null(osm_pois)) break
+  }
+  return(list(osm_pois=osm_pois,
+              pois_points = osm_pois$osm_points,
+              pois_polygons = osm_pois$osm_polygons))
+}
+
+osm_pois_1stsubdistrict_campos = baixa_pois(bbox_1stsubdistrict_campos)
+readr::write_rds(
+  osm_pois_1stsubdistrict_campos$osm_pois, "site/tutorials/dados/osm_pois_1stsubdistrict_campos.rds")
+sf::write_sf(
+  osm_pois_1stsubdistrict_campos$pois_points,
+  "inst/extdata/osm_pois_1stsubdistrict_campos_points.gpkg",
+  delete_dsn = TRUE)
+sf::write_sf(
+  osm_pois_1stsubdistrict_campos$pois_polygons,
+  "inst/extdata/osm_pois_1stsubdistrict_campos_polygons.gpkg",
+  delete_dsn = TRUE)
+
+osm_pois_campos = baixa_pois(bbox_campos)
+readr::write_rds(
+  osm_pois_campos$osm_pois, "site/tutorials/dados/osm_pois_campos.rds")
+sf::write_sf(
+  osm_pois_campos$pois_points,
+  "inst/extdata/osm_pois_campos_points.gpkg",
+  delete_dsn = TRUE)
+sf::write_sf(
+  osm_pois_campos$pois_polygons,
+  "inst/extdata/osm_pois_campos_polygons.gpkg",
+  delete_dsn = TRUE)
+
+
+osm_pois_sjb = baixa_pois(bbox_sjb)
+readr::write_rds(
+  osm_pois_sjb$osm_pois, "site/tutorials/dados/osm_pois_sjb.rds")
+sf::write_sf(
+  osm_pois_sjb$pois_polygons,
+  "inst/extdata/osm_pois_sjb_polygons.gpkg",
+  delete_dsn = TRUE)
+sf::write_sf(
+  osm_pois_sjb$pois_points,
+  "inst/extdata/osm_pois_sjb_points.gpkg",
+  delete_dsn = TRUE)
+
+
+```
+
+:::
+
+
+
+## Unir e relacionar dados com a base censitária
+
+Até esse ponto, trabalhamos os dados do OpenStreetMap principalmente como uma tabela de atributos: contamos categorias, agrupamos tipos de equipamentos e exploramos as tags disponíveis. Entretanto, o verdadeiro potencial analítico desses dados aparece quando começamos a relacioná-los com o espaço. Aqui a ideia de “unir” muda um pouco em relação ao que fizemos com os dados do Censo Demográfico.
+
+Nos dados censitários, a união normalmente ocorre por uma chave comum, como `code_tract`, que identifica unicamente cada setor censitário. Nesse caso, estamos apenas conectando tabelas diferentes que possuem o mesmo identificador territorial. Com o OpenStreetMap, porém, a lógica costuma ser diferente. Muitos objetos podem ser pontos geográficos (escolas, farmácias, restaurantes, bancos), linhas (ruas, cursos d'água, linha de costa) ou áreas (limites administrativos, bairros, praças, parques) e, por isso, as relações passam a ser feitas espacialmente. Em outras palavras, o importante deixa de ser uma chave numérica e passa a ser a posição dos objetos no espaço.
+
+Isso abre uma série de possibilidades analíticas:
+
+- contar quantos equipamentos existem dentro de cada setor censitário ou célula;
+- verificar quais pontos estão dentro de uma área de influência (*buffer*);
+- calcular a distância até o equipamento mais próximo;
+- distribuir equipamentos em grades regulares;
+- medir acessibilidade espacial;
+- comparar infraestrutura urbana e características demográficas.
+
+Em aplicações de geomarketing e planejamento urbano, esse tipo de cruzamento espacial é extremamente comum. A partir dele, podemos começar a responder perguntas como:
+
+- quais setores possuem maior concentração de serviços?
+- quais áreas têm baixa cobertura de equipamentos urbanos?
+- onde existem potenciais vazios comerciais?
+- quais regiões possuem população, mas poucos serviços próximos?
+
+nos próximos tutoriais vamos retomar os setores censitários e os dados do Censo Demográfico e realizar alguns desses cruzamentos espaciais utilizando os pontos do OpenStreetMap.
+
+## Contar quantos equipamentos existem dentro de uma área específica
+
+O primeiro passo em muitas análises espaciais é delimitar a área que desejamos estudar. Essa área pode representar um bairro, uma região comercial, um entorno escolar, uma área de influência ou qualquer outro recorte espacial relevante para a análise. Nosso exercício nesta seção será contar quantos equipamentos de alimentação tem na região de Grussaí. A ideia é usar algumas abordagens. A primeira dela é usar algum limite já mapeado pelo IBGE para delimitar a área.
+
+```{r}
+
+setores_sjb_wgs84ll %>%
+  janitor::tabyl(name_district) %>%
+  dplyr::arrange(desc(n)) %>%
+  janitor::adorn_pct_formatting(
+    digits = 1
+  )
+
+setores_grussai_wgs84ll = setores_sjb_wgs84ll %>%
+  filter(name_district == 'Grussaí')
+
+```
+
+O segundo passo é fazer a intercessão e contar quantos pontos tem na área que escolhemos. mas, lembrem-se que nem sempre o CRS é o mesmo.
+
+```{r}
+# filtrar apenas equipamentos de alimentação
+pois_alimentacao <- osm_pois_points_categorizados %>%
+  filter(categoria == "Alimentação")
+
+# filtrar os pontos que estão dentro de Grussai
+pois_grussai <- sf::st_filter(
+  pois_alimentacao,
+  setores_grussai_wgs84ll
+)
+
+# contar quantidade
+nrow(pois_grussai)
+```
+
+```{r}
+base_grussai_tm = tm_shape(setores_grussai_wgs84ll)+
+  tm_polygons(fill = 'grey80', col = 'grey80')
+
+pontos_tm =
+  tm_shape(pois_grussai) +
+  tm_symbols(
+    fill = "red", shape = 21, col = NULL, size = 0.5)
+#tmap::tmap_mode("view")
+base_grussai_tm + pontos_tm
+
+```
+
+Mas, nem sempre a área que queremos analisar coincide com os limites territoriais oficiais do IBGE. No caso de Grussaí, por exemplo, o distrito corresponde a uma shape relativamente estreita e extensa, que se prolonga até a região de Caruara e inclui grandes áreas anda urbanizadas, como parte da Reserva Particular da Fazenda Caruara. Dependendo do problema de pesquisa, esse limite administrativo pode não representar adequadamente aquilo que intuitivamente entendemos como “Grussaí”.
+
+Em muitas aplicações de geomarketing e análise espacial, o interesse está menos nos limites oficiais e mais em áreas funcionais ou percebidas socialmente: uma centralidade comercial, uma área turística, um entorno escolar, uma região de influência ou mesmo um bairro informalmente reconhecido pela população.
+
+Nesses casos, pode ser mais interessante criar nossos próprios recortes espaciais. O próprio R permite desenhar áreas interativamente por meio de bibliotecas como `leaflet`, `mapview` e `mapedit`, mas isso normalmente exige transformar temporariamente o computador em um pequeno servidor web local, o que pode tornar o processo mais complexo para atividades introdutórias.
+
+Por isso, ferramentas como Google Earth, uMap ou geojson.io acabam sendo alternativas bastante práticas para desenhar áreas de interesse diretamente sobre o mapa e exportá-las em formatos como `*.kml` ou `*.geojson`, que depois podem ser utilizados no R ou no QGIS. Uma ferramenta bastante conhecida para isso é o Google Earth, que permite desenhar áreas diretamente sobre o mapa e exportá-las em formatos como `*.kml`. Esses arquivos podem depois ser lidos no R, QGIS ou em outros softwares de geoprocessamento.
+
+Entretanto, vale lembrar que o Google Earth é uma plataforma proprietária. Embora seja extremamente conveniente e popular, seu uso nos torna dependentes de serviços e formatos vinculados a grandes empresas de tecnologia. Em muitos contextos — especialmente no ensino, na pesquisa e em projetos de ciência aberta — pode ser interessante buscar alternativas mais abertas e interoperáveis.
+
+Felizmente, hoje existem diversas ferramentas que utilizam mapas do OpenStreetMap como base e permitem desenhar áreas, criar pontos e exportar arquivos geográficos de forma relativamente simples. Entre elas estão o uMap, geojson.io e o próprio QGIS. Essas alternativas reforçam uma lógica mais aberta de produção e circulação de dados espaciais, algo historicamente bastante valorizado na Geografia e no geoprocessamento livre.
+
+
+
+
+## Salvar
+
+- Salvar a base tratada em `.rds`
+- Salvar camada espacial em `.gpkg`
+
+::: {.callout-important}
+## 📝 Exercício rápido
+
+
+
+- Escolher um tipo de ponto de interesse
+- Baixar dados do OSM
+- Selecionar e limpar variáveis
+- Contar quantos pontos existem por setor ou por grade
+- Fazer um mapa simples
+
+**Sugestão:** há um arquivo chamado `osm_pois_1stsubdistrict_campos.rds` na pasta de ados que tem os pontos de interesse do primeiro subdistrito de campos. Sã0 841 pontos. Comecem por ele caso os dados não baixem da internet.
+
+:::
+
+## Limitações dos dados do OpenStreetMap
+
+Apesar do enorme potencial analítico do OpenStreetMap, é importante lembrar que se trata de uma base colaborativa. Isso significa que a qualidade, a cobertura e o detalhamento dos dados dependem diretamente da atividade dos usuários que contribuíram para o mapeamento de cada localidade.
+
+Nem todos os equipamentos urbanos estão necessariamente registrados no mapa. Em municípios pequenos ou áreas periféricas, muitos elementos podem simplesmente não ter sido inseridos ainda. Além disso, as classificações nem sempre seguem um padrão rígido. Um mesmo tipo de estabelecimento pode aparecer registrado com tags diferentes dependendo do mapeador, do contexto local ou do nível de detalhamento adotado.
+
+Também é comum encontrar inconsistências, erros de classificação ou objetos sem nome preenchido. Por isso, os dados do OSM devem ser interpretados de forma crítica e, sempre que possível, comparados com outras fontes de informação.
+
+Talvez a limitação mais importante seja a seguinte: a ausência de um objeto no OpenStreetMap não significa necessariamente a ausência real daquele equipamento no território. Muitas vezes, significa apenas que ele ainda não foi mapeado.
+
+Mesmo com essas limitações, o OSM continua sendo uma das principais fontes abertas de dados espaciais do mundo, especialmente útil para aplicações exploratórias, ensino, planejamento urbano e análise espacial aplicada.
+
+::: {.callout-note collapse="true"}
+## Para saber mais: APIs de mapas comerciais
+
+Além do OpenStreetMap, existem diversas plataformas comerciais que oferecem serviços de mapas, geocodificação, cálculo de rotas, imagens de satélite e pontos de interesse por meio de APIs (*Application Programming Interfaces*). Entre as mais conhecidas estão o Google Maps Platform, Apple MapKit, Bing Maps, Mapbox e HERE Technologies.
+
+Essas plataformas costumam oferecer bases mais completas e padronizadas para determinadas aplicações, especialmente em navegação, trânsito em tempo real e localização de estabelecimentos comerciais. Em contrapartida, normalmente possuem limites de uso gratuito, necessidade de autenticação e custos associados ao volume de requisições realizadas.
+
+Em aplicações profissionais de geomarketing, logística e mobilidade urbana, é bastante comum combinar dados abertos — como o OpenStreetMap — com serviços comerciais especializados.
+
+:::
+

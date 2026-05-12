@@ -10,10 +10,12 @@ website:
         text: Início
       - href: tutorials/introducao_geomarketing.qmd
         text: Introdução ao Geomarketing
-      - href: tutorials/preparacao_dados_ibge.qmd
-        text: Preparação de Dados IBGE
-      - href: tutorials/preparacao_dados_pois.qmd
-        text: Preparação de Dados POIs
+      - text: Preparação de Dados
+        menu:
+          - href: tutorials/preparacao_dados_ibge.qmd
+            text: Dados do IBGE
+          - href: tutorials/preparacao_dados_pois.qmd
+            text: Dados do OSM / POIs
 
 format:
   html:
