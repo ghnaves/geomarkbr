@@ -1,5 +1,5 @@
 ---
-title: "Preparação de dados"
+title: "Análise de Dados"
 subtitle: "Aplicações com o pacote geomarkbr"
 author: "Gustavo Givisiez"
 date: today

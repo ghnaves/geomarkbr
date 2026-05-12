@@ -1,5 +1,5 @@
 ---
-title: "Preparação de dados"
+title: "Preparação de dados de Pontos de Interesse (POI's)"
 subtitle: "Aplicações com o pacote geomarkbr"
 author: "Gustavo Givisiez"
 date: today
