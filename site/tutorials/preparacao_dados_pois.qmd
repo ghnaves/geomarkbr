@@ -1,6 +1,6 @@
 ---
-title: "Preparação de dados de Pontos de Interesse (POI's)"
-subtitle: "Aplicações com o pacote geomarkbr"
+title: "Preparação de dados de Pontos de Interesse"
+subtitle: "OpenStreetMap"
 author: "Gustavo Givisiez"
 date: today
 lang: pt-BR
@@ -611,17 +611,21 @@ Nos próximos tutoriais vamos retomar os setores censitários e os dados do Cens
 Para finalizar é sempre importante salvar a base tratada no formato `.rds`, nativo do R ou em formatos que sejam legiveis por outros aplicativos como `.gpkg` ou Microsoft Excel
 
 ```{r eval = FALSE}
+
+processed_pf = here::here('sandbox/aula_geomarketing02/processed/')
 # Salvando em formatos mais universais
-sf::write_sf(osm_pois_points_categorizados, 'sandbox/aula_geomarketing02/processed/osm_pois_pts_categ.gpkg')
-sf::write_sf(setores_sjb_wgs84ll, 'sandbox/aula_geomarketing02/processed/setores_sjb_wgs84ll.gpkg')
-sf::write_sf(supermarket_points, 'sandbox/aula_geomarketing02/processed/supermarket_grussai_points.gpkg')
-writexl::write_xlsx(tab_categoria, 'sandbox/aula_geomarketing02/processed/tab_categoria.xlsx')
+sf::write_sf(osm_pois_points_categorizados, 
+             paste0(processed_pf,'osm_pois_pts_categ.gpkg'))
+sf::write_sf(setores_sjb_wgs84ll, 
+             paste0(processed_pf,'setores_sjb_wgs84ll.gpkg'))
+sf::write_sf(supermarket_points, paste0(processed_pf,'supermarket_grussai_points.gpkg'))
+writexl::write_xlsx(tab_categoria, paste0(processed_pf,'tab_categoria.xlsx'))
 
 # Salvando em formatos do R
-readr::write_rds(osm_pois_points_categorizados, 'sandbox/aula_geomarketing02/processed/osm_pois_pts_categ.rds')
-readr::write_rds(setores_sjb_wgs84ll, 'sandbox/aula_geomarketing02/processed/setores_sjb_wgs84ll.rds')
-readr::write_rds(supermarket_points, 'sandbox/aula_geomarketing02/processed/supermarket_grussai_points.rds')
-readr::write_rds(tab_categoria, 'sandbox/aula_geomarketing02/processed/tab_categoria.rds')
+readr::write_rds(osm_pois_points_categorizados, paste0(processed_pf,'osm_pois_pts_categ.rds'))
+readr::write_rds(setores_sjb_wgs84ll, paste0(processed_pf,'setores_sjb_wgs84ll.rds'))
+readr::write_rds(supermarket_points, paste0(processed_pf,'supermarket_grussai_points.rds'))
+readr::write_rds(tab_categoria, paste0(processed_pf,'tab_categoria.rds'))
 
 # Salvando o mapa como imagem
 pontos_tm =
@@ -630,7 +634,7 @@ pontos_tm =
     fill = "categoria", shape = 21, col = NULL)
 mapa = base_tm + pontos_tm
 
-tmap_save(mapa, filename = 'sandbox/aula_geomarketing02/processed/mapa.png')
+tmap_save(mapa, filename = paste0(processed_pf,'processed/mapa.png'))
 
 ```
 
@@ -664,7 +668,7 @@ aula_ls = list(osm_pois_points_categorizados=osm_pois_points_categorizados,
                mapa = mapa)
 
 # Salvando em formatos do R
-readr::write_rds(aula_ls, 'sandbox/aula_geomarketing02/processed/aula_ls.rds')
+readr::write_rds(aula_ls, paste0(processed_pf,'aula_ls.rds'))
 
 #para exibir o mapa, por exemplo
 aula_ls$mapa

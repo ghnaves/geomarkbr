@@ -1,6 +1,6 @@
 ---
-title: "Preparação de dados do Censo Demográfico 2022 (IBGE)"
-subtitle: "Aplicações com o pacote geomarkbr"
+title: "Preparação de Dados da População"
+subtitle: "Censo Demográfico 2022"
 author: "Gustavo Givisiez"
 date: today
 lang: pt-BR
