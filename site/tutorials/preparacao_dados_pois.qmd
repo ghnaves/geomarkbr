@@ -323,8 +323,6 @@ Por exemplo, a tag: `amenity = school` indica que o objeto representa um equipam
 
 As páginas mais importantes para explorar essas classificações são:
 
-As páginas mais importantes para explorar essas classificações são:
-
 * [Map Features](https://wiki.openstreetmap.org/wiki/Map_features): visão geral das principais categorias do OSM;
 * [Key:amenity](https://wiki.openstreetmap.org/wiki/Key:amenity): equipamentos e serviços urbanos;
 * [Key:highway](https://wiki.openstreetmap.org/wiki/Key:highway): classificação de vias;

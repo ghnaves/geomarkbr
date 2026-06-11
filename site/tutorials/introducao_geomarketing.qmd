@@ -215,9 +215,23 @@ O comando a seguir é simples. O único objetivo dele é exibir o objeto `base` 
 Esse mapa pode ser copido para a área de tranferencia e colado em um arquivo de processadores de texto (MS Word ou Google Docs, por exemplo). Também pode ser salvo em formatos de imagem (PNG ou JPEG).
 
 
-```{r}
+```{r eval=FALSE}
 gm_plot_basic(base, pop_abs, "População por setor")
 ```
+
+```{r eval=FALSE, echo = FALSE}
+tm_temp =  gm_plot_basic(base, pop_abs, "População por setor")
+tmap_save(tm = tm_temp, filename = "output/Populacao_por_setor.png", 
+          width = 20,
+          height = 14,
+          units = 'cm')
+```
+
+![População por setor censitário. Campos dos Goytacazes, 2022](output/Populacao_por_setor.png){#fig-pop_setor width=80% fig-align="center"}
+
+:::{.figure-source}
+Fonte: Censo Demográfico 2022. IBGE.
+:::
 
 Mas, esse mapa é estático, ou seja, você não consegue navegar nele (dar zoom e ocultar camadas). A sequencia abaixo "liga" o mapa "dinâmico". Isso pode ser ativado com `tmap::tmap_mode("view")`.
 
@@ -344,10 +358,27 @@ Para viabilizar a análise espacial em uma escala mais fina, adotamos uma simpli
 
 É importante destacar que essa é uma aproximação. Ela não captura a distribuição real da população dentro dos setores, mas fornece uma base consistente e operacional para análise, especialmente quando não há informações mais detalhadas disponíveis.
 
-```{r}
+```{r eval = FALSE, echo = FALSE}
 grid_base = gm_interpolation_2_grid(grid_utm, base_utm, 
                         vars_extensive = 'pop_abs',
                         vars_intensive= 'idade_media')
+
+gm_plot_basic(grid_base, var = 'pop_abs', titulo = 'População Absoluuta no grid')
+gm_plot_basic(grid_base, var = 'idade_media', titulo = 'Idade Média no grid')
+
+```
+
+```{r eval = FALSE}
+grid_base = gm_interpolation_2_grid(grid_utm, base_utm, 
+                        vars_extensive = 'pop_abs',
+                        vars_intensive= 'idade_media')
+
+gm_plot_basic(grid_base, var = 'pop_abs', titulo = 'População Absoluuta no grid')
+gm_plot_basic(grid_base, var = 'idade_media', titulo = 'Idade Média no grid')
+
+```
+
+```{r eval = FALSE, echo = FALSE}
 
 gm_plot_basic(grid_base, var = 'pop_abs', titulo = 'População Absoluuta no grid')
 gm_plot_basic(grid_base, var = 'idade_media', titulo = 'Idade Média no grid')

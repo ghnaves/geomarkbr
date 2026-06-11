@@ -16,6 +16,7 @@ sandbox/
 site/tutorials/dados/
 *.rds
 *.gpkg
+output/
 
 # Quarto temporário
 /.quarto/
