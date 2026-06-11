@@ -59,14 +59,16 @@ setores_rj <- gm_read_sectors_data(code = 33)|>
 
 # Base local (RJ inteiro) + filtro para São João da Barra
 
-dados_pf = here::here('site/tutorials/dados/') 
-readr::write_sf(setores_rj,
-                paste0(dadps_pf,"shape_rj.gpkg"), 
+dados_pf = here::here('sandbox/aula_geomarketing04/data') 
+sf::write_sf(setores_rj,
+                paste0(dados_pf,"shape_rj.gpkg"), 
                 overwrite = TRUE)
 
 ```
 
 ```{r echo = TRUE, eval = FALSE}
+dados_pf = here::here('site/tutorials/dados/') 
+
 limites_sjb = geobr::read_municipality(2022, code_muni = 3305000)
 setores_sjb = geobr::read_census_tract(code_tract = 3305000, year = 2022)
 sf::write_sf(limites_sjb,
@@ -142,7 +144,7 @@ baixa_pois = function(bbox){
           bbox = bbox,
           timeout = 300
         ) |>
-          osmdata::add_osm_feature(key = "amenity") |>
+          #osmdata::add_osm_feature(key = "amenity") |>
           osmdata::osmdata_sf()
       },
       error = function(e) {
@@ -170,17 +172,17 @@ sf::write_sf(
   "inst/extdata/osm_pois_1stsubdistrict_campos_polygons.gpkg",
   delete_dsn = TRUE)
 
-osm_pois_campos = baixa_pois(bbox_campos)
-readr::write_rds(
-  osm_pois_campos$osm_pois, "site/tutorials/dados/osm_pois_campos.rds")
-sf::write_sf(
-  osm_pois_campos$pois_points,
-  "inst/extdata/osm_pois_campos_points.gpkg",
-  delete_dsn = TRUE)
-sf::write_sf(
-  osm_pois_campos$pois_polygons,
-  "inst/extdata/osm_pois_campos_polygons.gpkg",
-  delete_dsn = TRUE)
+# osm_pois_campos = baixa_pois(bbox_campos)
+# readr::write_rds(
+#   osm_pois_campos$osm_pois, "site/tutorials/dados/osm_pois_campos.rds")
+# sf::write_sf(
+#   osm_pois_campos$pois_points,
+#   "inst/extdata/osm_pois_campos_points.gpkg",
+#   delete_dsn = TRUE)
+# sf::write_sf(
+#   osm_pois_campos$pois_polygons,
+#   "inst/extdata/osm_pois_campos_polygons.gpkg",
+#   delete_dsn = TRUE)
 
 
 osm_pois_sjb = baixa_pois(bbox_sjb)
@@ -252,7 +254,7 @@ pois_polygons <- osm_pois$osm_polygons
 
 ```
 
-Esse comando, muito frequentemente, retorna erros *HTTP 504 Gateway Timeout* ou *HTTP 429 Too Many Requests*. Isso ainda é mais frequente em ambiente de laboratórios de ensino. Outras vezes o erro é do servidor mesmo: o servidor padrão às vezes fica lento ou indisponível. O osmdata prevê formas alteranativas de alternar o endpoint (URL) para acessar os dados do OSM, e o `opq()` permite controlar timeout, tipos de objeto e parâmetros da consulta. Consulte o bloco de **Código de desenvolvimento** no início deste documento ou a ajuda com `?opq`.
+Esse comando, muito frequentemente, retorna erros *HTTP 504 Gateway Timeout* ou *HTTP 429 Too Many Requests*. Isso ainda é mais frequente em ambiente de laboratórios de ensino. Outras vezes o erro é do servidor que às vezes fica lento ou indisponível. O osmdata prevê formas alteranativas de alternar o endpoint (URL) para acessar os dados do OSM, e o `opq()` permite controlar timeout, tipos de objeto e parâmetros da consulta. Consulte o bloco de **Código de desenvolvimento** no início deste documento ou a ajuda com `?opq`.
 
 Para contornar esse problema, as bases do OSM para São João da Barra foram salvas no diretório de exemplos do `geomarkbr`. 
 
